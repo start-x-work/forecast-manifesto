@@ -1,0 +1,30 @@
+{
+  "name": "forecast-manifesto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "需要予測の意思決定構造を、編集可能な素材として公開する（OSS）。",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/start-x-work/forecast-manifesto.git"
+  },
+  "homepage": "https://github.com/start-x-work/forecast-manifesto",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @forecast-manifesto/solver",
+    "test": "npm run test --workspace @forecast-manifesto/solver",
+    "typecheck": "npm run typecheck --workspace @forecast-manifesto/solver",
+    "example:k": "tsx examples/k-identification.ts",
+    "example:forecast": "tsx examples/new-product-forecast.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
