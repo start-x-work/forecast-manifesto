@@ -1,0 +1,128 @@
+# Forecast Manifesto
+
+**需要予測の意思決定構造を、編集可能な素材として公開する。**
+
+Marketing-OS Manifesto に続く「設計と編集」シリーズ第 2 弾（需要予測編）。数理モデル（NBD ＋ BP-10）による需要予測の**計算方法**と**メソッド選定の考え方**を OSS として公開する。
+
+森岡毅・今西聖貴『確率思考の戦略論』（KADOKAWA）のメソッドに基づく実装。公知の数式・モデル構造のみを実装し、書籍本文の転載はしない。
+
+---
+
+## 3 層構造：どこまでが無料で、どこからが支援か
+
+```
+┌─ 公開層（本リポジトリ｜OSS）───────────────────────┐
+│  ソルバー実装・BP-10 テンプレ・メソッド選定決定木・思想        │
+└──────────┬──────────────────┬──────────────┘
+           ↓ 参照                    ↓ 参照
+┌─ 診断ツール層 ─────┐   ┌─ サービス層（非公開）──────────┐
+│ Marketing-OS         │   │ 顧問デリバラブル：                    │
+│ 需要予測構造診断      │   │   業界別ベンチマーク K 値            │
+│ = ソルバーの Web 版  │   │   Price Adjustment 実係数・個社予測  │
+│                      │   │   外部データパイプライン              │
+└──────────────┘   └──────────────────────────┘
+```
+
+- **公開する**：計算方法・選定の考え方（コモディティ化してよい知識）
+- **公開しない**：顧問先データで蓄積するベンチマーク・係数・パイプライン（競争力の源泉）
+
+詳細な線引き宣言：[docs/05-boundaries.md](./docs/05-boundaries.md)
+
+---
+
+## クイックスタート
+
+```bash
+npm install @forecast-manifesto/solver
+```
+
+観測された平均購入回数 `M` と浸透率 `penetration` から、NBD の形状パラメータ `K` を同定する：
+
+```ts
+import { identifyK } from "@forecast-manifesto/solver";
+
+const { K } = identifyK(1372 / 279812, 0.004875);
+console.log(K); // ≈ 0.75
+```
+
+新商品の売上予測（BP-10 → ユニットシェア → 売上）：
+
+```ts
+import { conceptShare, unitShare, forecastRevenue } from "@forecast-manifesto/solver";
+
+const cs = conceptShare([[4, 3, 3], [6, 2, 2], [3, 4, 3]]); // BP-10 集計
+const share = unitShare(0.6, 0.7, cs, 1.0);                 // 認知×配荷×CS×価格調整
+const revenue = forecastRevenue(2_000_000, share, 480);     // 市場規模×シェア×単価
+```
+
+実行できる例：[`examples/`](./examples)
+
+---
+
+## ドキュメント（読了 15 分）
+
+| # | 内容 |
+|---|------|
+| [01](./docs/01-philosophy.md) | なぜ数理 × AI のハイブリッドか |
+| [02](./docs/02-method-selection.md) | メソッド選定の決定木 |
+| [03](./docs/03-nbd-model.md) | NBD モデル解説（M・K の意味、同定手順） |
+| [04](./docs/04-bp10.md) | BP-10 設問テンプレート＋集計方法 |
+| [05](./docs/05-boundaries.md) | 公開/非公開の線引き宣言 |
+
+---
+
+## パッケージ：`@forecast-manifesto/solver`
+
+| 関数 | 役割 |
+|------|------|
+| `nbdPmf(r, M, K)` | NBD 確率質量関数 `P_r` |
+| `identifyK(M, penetration, opts?)` | K 同定（安全化 Newton 法） |
+| `zeroPurchaseProbability(M, K)` / `penetrationFromK(M, K)` | 非購入率／浸透率 |
+| `conceptShare(votes, targetIndex?)` | BP-10 コンセプトシェア集計 |
+| `unitShare(awareness, distribution, conceptShare, priceAdj)` | ユニットシェア |
+| `forecastRevenue(marketSize, unitShare, unitPrice)` | 売上予測 |
+
+---
+
+## 試す / 頼む
+
+- **試したい** → [Marketing-OS 需要予測構造診断](https://marketing-os.jp)（Web でソルバーを動かす）
+- **頼みたい** → [Start-X 需要予測・事業シミュレーション](https://start-x.work/service/)（非公開資産で回す実務）
+
+---
+
+## 開発
+
+```bash
+npm install       # ワークスペース依存の導入
+npm run build     # solver をビルド
+npm test          # Vitest
+npm run example:k         # K 同定の実例
+npm run example:forecast  # 新商品売上予測の実例
+```
+
+---
+
+## English summary
+
+**Forecast Manifesto** publishes the *decision structure* of demand forecasting as an editable material. It open-sources the calculation methods (NBD + BP-10) and the method-selection reasoning behind demand forecasting — the second entry in the "design & edit" series after Marketing-OS Manifesto.
+
+It is an implementation of the methodology in *確率思考の戦略論* (Morioka & Imanishi, KADOKAWA). Only publicly known formulas and model structures are implemented; no book text is reproduced.
+
+- **Open** (this repo): solver, BP-10 template, method-selection decision tree, philosophy — knowledge that is fine to commoditize.
+- **Not open** (advisory deliverables): industry benchmark K values, real Price-Adjustment coefficients, per-company forecasts, external data pipelines — the competitive edge accumulated from client data.
+
+```bash
+npm install @forecast-manifesto/solver
+```
+
+```ts
+import { identifyK } from "@forecast-manifesto/solver";
+const { K } = identifyK(1372 / 279812, 0.004875); // ≈ 0.75
+```
+
+---
+
+## License
+
+Apache-2.0 — Marketing-OS エコシステムと同一。詳細は [LICENSE](./LICENSE) / [NOTICE](./NOTICE)。
