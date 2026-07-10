@@ -1,0 +1,51 @@
+{
+  "name": "@forecast-manifesto/clv",
+  "version": "0.1.0",
+  "description": "顧客生涯価値（CLV）の数理モデル：BG/NBD ＋ Gamma-Gamma。市場の NBD（@forecast-manifesto/solver）と同一血統で顧客資産を貫く。",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/start-x-work/forecast-manifesto.git",
+    "directory": "packages/clv"
+  },
+  "homepage": "https://github.com/start-x-work/forecast-manifesto",
+  "keywords": [
+    "clv",
+    "ltv",
+    "bg-nbd",
+    "gamma-gamma",
+    "rfm",
+    "customer-lifetime-value",
+    "start-x"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forecast-manifesto/solver": "^0.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
