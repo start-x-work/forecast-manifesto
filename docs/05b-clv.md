@@ -64,7 +64,7 @@ const report = summarize(rfm, p, gg);                   // 診断サマリ
 
 ## 5. 実務導線
 
-- **試したい（簡易版）** → Marketing-OS 需要予測構造診断・顧客資産診断（第9弾）で Web から
+- **試したい（簡易版）** → [Marketing-OS 需要予測構造診断・顧客資産診断（第9弾）](https://marketing-os.jp/lp/)で Web から
 - **頼みたい（個票分析）** → [Start-X 顧問サービス](https://start-x.work/service/)：業界別ベンチマーク・外部データ連携・個社の CLV 運用
 
 公開するのは計算方法（このモジュール）まで。業界別ベンチマーク係数・個社予測・データパイプラインは非公開資産（→ [05-boundaries.md](./05-boundaries.md)）。
