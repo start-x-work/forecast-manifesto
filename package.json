@@ -14,11 +14,12 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace @forecast-manifesto/solver",
-    "test": "npm run test --workspace @forecast-manifesto/solver",
-    "typecheck": "npm run typecheck --workspace @forecast-manifesto/solver",
+    "build": "npm run build -w @forecast-manifesto/solver && npm run build -w @forecast-manifesto/clv",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "example:k": "tsx examples/k-identification.ts",
-    "example:forecast": "tsx examples/new-product-forecast.ts"
+    "example:forecast": "tsx examples/new-product-forecast.ts",
+    "example:clv": "tsx examples/clv-cohort.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

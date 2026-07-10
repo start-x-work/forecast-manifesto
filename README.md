@@ -8,6 +8,22 @@ Marketing-OS Manifesto に続く「設計と編集」シリーズ第 2 弾（需
 
 ---
 
+## スタック：市場 → 顧客を同一の数学血統で貫く
+
+```
+A1  市場の NBD ✅ 公開済         A2  顧客の NBD ✅ 追加
+    @forecast-manifesto/solver       @forecast-manifesto/clv
+    NBD ＋ BP-10                       BG/NBD ＋ Gamma-Gamma
+    浸透率・売上の天井                 生存・期待購買・CLV
+        │                                  │
+        └────── 同じ負の二項分布 ──────────┘
+        森岡（市場の NBD）→ Schmittlein/Fader（顧客の NBD）
+```
+
+market（solver）で「市場に何回買う人がどれだけいるか」を、customer（clv）で「この顧客が今後何回・いくら買うか」を、**同じ分布**で扱う。→ [docs/05b-clv.md](./docs/05b-clv.md)
+
+---
+
 ## 3 層構造：どこまでが無料で、どこからが支援か
 
 ```
@@ -55,6 +71,16 @@ const share = unitShare(0.6, 0.7, cs, 1.0);                 // 認知×配荷×C
 const revenue = forecastRevenue(2_000_000, share, 480);     // 市場規模×シェア×単価
 ```
 
+顧客生涯価値（CLV）— 取引ログから BG/NBD ＋ Gamma-Gamma で個客価値を出す：
+
+```ts
+import { toRfm, fitBgNbd, fitGammaGamma, clv } from "@forecast-manifesto/clv";
+
+const rfm = toRfm(transactions, observationEnd);   // 取引ログ → RFM
+const [p, gg] = [fitBgNbd(rfm), fitGammaGamma(rfm)]; // 生存・頻度／金額
+const value = clv(rfm[0], p, gg, { horizonMonths: 12, monthlyDiscount: 0.01, margin: 0.3 });
+```
+
 実行できる例：[`examples/`](./examples)
 
 ---
@@ -68,6 +94,7 @@ const revenue = forecastRevenue(2_000_000, share, 480);     // 市場規模×シ
 | [03](./docs/03-nbd-model.md) | NBD モデル解説（M・K の意味、同定手順） |
 | [04](./docs/04-bp10.md) | BP-10 設問テンプレート＋集計方法 |
 | [05](./docs/05-boundaries.md) | 公開/非公開の線引き宣言 |
+| [05b](./docs/05b-clv.md) | 顧客資産の思想（NBD の家系図：森岡 → Fader） |
 
 ---
 
@@ -82,6 +109,22 @@ const revenue = forecastRevenue(2_000_000, share, 480);     // 市場規模×シ
 | `unitShare(awareness, distribution, conceptShare, priceAdj)` | ユニットシェア |
 | `forecastRevenue(marketSize, unitShare, unitPrice)` | 売上予測 |
 
+## パッケージ：`@forecast-manifesto/clv`
+
+| 関数 | 役割 |
+|------|------|
+| `toRfm(transactions, observationEnd, opts?)` | 取引ログ → 顧客別 RFM |
+| `fitBgNbd(rfm, opts?)` | BG/NBD 最尤推定（頻度・生存） |
+| `probAlive(c, p)` / `expectedTransactions(t, c, p)` | 生存確率／期待購買回数 |
+| `fitGammaGamma(rfm, opts?)` / `expectedAvgValue(c, gg)` | 金額モデル（独立性チェック付き） |
+| `clv(c, p, gg, opts)` | CLV（割引現在価値） |
+| `summarize(rfm, p, gg)` | 診断サマリ（生存率・集中度・セグメント） |
+| `fitTruncatedNbd(m, repeatRate, opts?)` | ゼロ切断 NBD：購入者の平均回数とリピート率から (M, K) を同定 |
+| `truncatedNbdDistribution(M, K, n)` / `expectedNextPeriodPurchases(r, M, K)` | P(r \| r≥1)／翌年期待購買回数（逓減込み） |
+| `topBuyersRevenueShare(M, K, topFraction?)` | 上位 20% 購入者の売上集中度 |
+
+CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-2 で再現（`packages/clv/tests`）。
+
 ---
 
 ## 試す / 頼む
@@ -95,10 +138,11 @@ const revenue = forecastRevenue(2_000_000, share, 480);     // 市場規模×シ
 
 ```bash
 npm install       # ワークスペース依存の導入
-npm run build     # solver をビルド
-npm test          # Vitest
+npm run build     # solver → clv をビルド
+npm test          # Vitest（全ワークスペース）
 npm run example:k         # K 同定の実例
 npm run example:forecast  # 新商品売上予測の実例
+npm run example:clv       # 顧客資産（RFM → BG/NBD → CLV）の実例
 ```
 
 ---
