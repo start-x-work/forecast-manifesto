@@ -1,0 +1,47 @@
+name: Release
+
+# 手動ディスパッチでタグ＋GitHub Release を作成する。
+# npm publish は手元で行う運用のため、この workflow はタグ付けとリリースノートのみを担う。
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name (e.g. solver-v0.1.0)"
+        required: true
+        type: string
+      target:
+        description: "Target commit SHA or branch"
+        required: true
+        default: "main"
+        type: string
+      title:
+        description: "Release title"
+        required: true
+        type: string
+      notes:
+        description: "Release notes (markdown)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          TARGET: ${{ inputs.target }}
+          TITLE: ${{ inputs.title }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$TARGET" \
+            --title "$TITLE" \
+            --notes "$NOTES"
