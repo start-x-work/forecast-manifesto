@@ -19,3 +19,4 @@ jobs:
       - run: npm test
       - run: npm run example:k
       - run: npm run example:forecast
+      - run: npm run example:clv
