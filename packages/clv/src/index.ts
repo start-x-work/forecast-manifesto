@@ -28,6 +28,14 @@ export type {
   IndependenceCheck,
 } from "./gammaGamma.js";
 
+export {
+  fitTruncatedNbd,
+  truncatedNbdDistribution,
+  expectedNextPeriodPurchases,
+  topBuyersRevenueShare,
+} from "./truncatedNbd.js";
+export type { FitTruncatedNbdOptions, FitTruncatedNbdResult } from "./truncatedNbd.js";
+
 export { clv, summarize } from "./clv.js";
 export type {
   ClvOptions,
