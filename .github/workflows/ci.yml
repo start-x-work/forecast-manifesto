@@ -8,11 +8,14 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
       - run: npm run build
@@ -20,3 +23,5 @@ jobs:
       - run: npm run example:k
       - run: npm run example:forecast
       - run: npm run example:clv
+      - run: npm run example:validate
+      - run: npm run example:interval
