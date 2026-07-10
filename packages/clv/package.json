@@ -1,6 +1,6 @@
 {
   "name": "@forecast-manifesto/clv",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "顧客生涯価値（CLV）の数理モデル：BG/NBD ＋ Gamma-Gamma。市場の NBD（@forecast-manifesto/solver）と同一血統で顧客資産を貫く。",
   "license": "Apache-2.0",
   "type": "module",
@@ -38,10 +38,11 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@forecast-manifesto/solver": "^0.1.0"
+    "@forecast-manifesto/solver": "^0.2.0"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

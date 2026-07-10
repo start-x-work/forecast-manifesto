@@ -14,17 +14,21 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @forecast-manifesto/solver && npm run build -w @forecast-manifesto/clv",
+    "build": "npm run build -w @forecast-manifesto/solver && npm run build -w @forecast-manifesto/clv && npm run build -w @forecast-manifesto/validate",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "example:k": "tsx examples/k-identification.ts",
     "example:forecast": "tsx examples/new-product-forecast.ts",
-    "example:clv": "tsx examples/clv-cohort.ts"
+    "example:clv": "tsx examples/clv-cohort.ts",
+    "example:validate": "tsx examples/validate-cdnow.ts",
+    "example:interval": "tsx examples/interval.ts",
+    "test:coverage": "npm run test:coverage --workspaces --if-present"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "tsx": "^4.19.0",
+    "@vitest/coverage-v8": "^2.1.9",
     "tsup": "^8.5.1",
+    "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
   }

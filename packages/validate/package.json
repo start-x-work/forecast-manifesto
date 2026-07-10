@@ -1,21 +1,21 @@
 {
-  "name": "@forecast-manifesto/solver",
-  "version": "0.2.0",
-  "description": "需要予測の数理ソルバー（NBD ＋ BP-10）。森岡毅・今西聖貴『確率思考の戦略論』のメソッドに基づく公知モデルの実装。",
+  "name": "@forecast-manifesto/validate",
+  "version": "0.1.0",
+  "description": "需要予測の検証モジュール：較正/検証分割・実測vs予測・累積トラッキング・誤差指標。「予測を当てるゲームにしない」の実証装置。",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/start-x-work/forecast-manifesto.git",
-    "directory": "packages/solver"
+    "directory": "packages/validate"
   },
   "homepage": "https://github.com/start-x-work/forecast-manifesto",
   "keywords": [
     "demand-forecast",
-    "nbd",
-    "negative-binomial",
-    "bp10",
-    "marketing",
+    "validation",
+    "holdout",
+    "bg-nbd",
+    "clv",
     "start-x"
   ],
   "main": "./dist/index.cjs",
@@ -39,6 +39,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@forecast-manifesto/clv": "^0.2.0"
   },
   "devDependencies": {
     "tsup": "^8.5.1",
