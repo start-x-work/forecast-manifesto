@@ -129,7 +129,7 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 
 ## 試す / 頼む
 
-- **試したい** → [Marketing-OS 需要予測構造診断](https://marketing-os.jp)（Web でソルバーを動かす）
+- **試したい** → [Marketing-OS 需要予測構造診断・顧客資産診断](https://marketing-os.jp/lp/)（Web でソルバー／clv を動かす）
 - **頼みたい** → [Start-X 需要予測・事業シミュレーション](https://start-x.work/service/)（非公開資産で回す実務）
 
 ---
