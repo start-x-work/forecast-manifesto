@@ -119,6 +119,9 @@ const value = clv(rfm[0], p, gg, { horizonMonths: 12, monthlyDiscount: 0.01, mar
 | `fitGammaGamma(rfm, opts?)` / `expectedAvgValue(c, gg)` | 金額モデル（独立性チェック付き） |
 | `clv(c, p, gg, opts)` | CLV（割引現在価値） |
 | `summarize(rfm, p, gg)` | 診断サマリ（生存率・集中度・セグメント） |
+| `fitTruncatedNbd(m, repeatRate, opts?)` | ゼロ切断 NBD：購入者の平均回数とリピート率から (M, K) を同定 |
+| `truncatedNbdDistribution(M, K, n)` / `expectedNextPeriodPurchases(r, M, K)` | P(r \| r≥1)／翌年期待購買回数（逓減込み） |
+| `topBuyersRevenueShare(M, K, topFraction?)` | 上位 20% 購入者の売上集中度 |
 
 CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-2 で再現（`packages/clv/tests`）。
 
