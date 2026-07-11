@@ -60,7 +60,7 @@ const report = summarize(rfm, p, gg);                   // 診断サマリ
 
 このモデルは**非契約型・連続時間**が前提だ。顧客がいつ離反したかを直接は観測できず（「解約ボタン」がない）、購買間隔から確率的に推定する——EC・小売・アプリ内課金などが該当する。
 
-**契約型（サブスク）は別系**。解約が観測できるサブスクリプションでは、shifted-beta-geometric（sBG）等の契約型モデルが適切であり、本モジュールのスコープ外とする。ベイズ推定（MCMC）による事後分布が必要な場合は [PyMC-Marketing](https://github.com/pymc-labs/pymc-marketing) を参照。
+**契約型（サブスク）は別系**。解約が観測できるサブスクリプションでは shifted-beta-geometric（sBG）が適切で、[`@forecast-manifesto/sbg`](./09-sbg.md) として提供している（使い分け表も同ページ）。ベイズ推定（MCMC）による事後分布が必要な場合は [PyMC-Marketing](https://github.com/pymc-labs/pymc-marketing) を参照。
 
 ## 5. 実務導線
 
