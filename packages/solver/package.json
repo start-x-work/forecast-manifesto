@@ -1,6 +1,6 @@
 {
   "name": "@forecast-manifesto/solver",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "需要予測の数理ソルバー（NBD ＋ BP-10）。森岡毅・今西聖貴『確率思考の戦略論』のメソッドに基づく公知モデルの実装。",
   "license": "Apache-2.0",
   "type": "module",
