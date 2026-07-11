@@ -15,5 +15,6 @@ export {
   expectedTenure,
   discountedExpectedLifetime,
   discountedExpectedResidualLifetime,
+  cohortLtv,
 } from "./sbg.js";
-export type { SbgParams, FitSbgResult, DelOptions } from "./sbg.js";
+export type { SbgParams, FitSbgResult, DelOptions, CohortLtvOptions } from "./sbg.js";

@@ -254,6 +254,29 @@ export function discountedExpectedLifetime(params: SbgParams, opts: DelOptions):
   return del;
 }
 
+export interface CohortLtvOptions extends DelOptions {
+  /** 1 期あたりの顧客単価（売上 or 粗利。どちらを入れたかで LTV の意味が決まる） */
+  revenuePerPeriod: number;
+}
+
+/**
+ * コホート LTV：新規獲得顧客 1 人あたりの割引生涯価値。
+ *
+ *   cohortLtv = revenuePerPeriod × DEL
+ *             = revenuePerPeriod × Σ_{t≥0} S(t)/(1+d)^t
+ *
+ * 支払いは各期の期首（獲得時 t=0 を含む）に発生する前提。horizon を与えると
+ * 打ち切り、省略時は 2F1 閉形式の無限和。
+ *
+ * @throws {RangeError} revenuePerPeriod <= 0、または DEL 側の入力が不正な場合
+ */
+export function cohortLtv(params: SbgParams, opts: CohortLtvOptions): number {
+  if (!(opts.revenuePerPeriod > 0)) {
+    throw new RangeError(`revenuePerPeriod must be > 0, received ${opts.revenuePerPeriod}`);
+  }
+  return opts.revenuePerPeriod * discountedExpectedLifetime(params, opts);
+}
+
 /**
  * DERL：n 期生き残った既存顧客の、残りの割引期待在籍
  * （Fader & Hardie 2009 "Customer-Base Valuation in a Contractual Setting"）。
