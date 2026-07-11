@@ -1,6 +1,6 @@
 {
   "name": "@forecast-manifesto/validate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "需要予測の検証モジュール：較正/検証分割・実測vs予測・累積トラッキング・誤差指標。「予測を当てるゲームにしない」の実証装置。",
   "license": "Apache-2.0",
   "type": "module",
@@ -41,7 +41,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@forecast-manifesto/clv": "^0.2.0"
+    "@forecast-manifesto/clv": "^0.3.0"
   },
   "devDependencies": {
     "tsup": "^8.5.1",
