@@ -254,6 +254,63 @@ export function discountedExpectedLifetime(params: SbgParams, opts: DelOptions):
   return del;
 }
 
+/**
+ * マルチコホートの対数尤度。cohorts[i] は 1 コホートの期別残存人数
+ * （例 [10000, 8000, 6480, 5307]。先頭が獲得時、以後は各期末の生存者数）。
+ * コホートごとに観測長が違ってよい（後発コホートほど短い、が典型）。
+ */
+export function logLikelihoodMultiCohort(params: SbgParams, cohorts: number[][]): number {
+  assertParams(params);
+  validateCohorts(cohorts);
+  const maxLen = Math.max(...cohorts.map((c) => c.length));
+  const p = churnProbabilities(params, maxLen - 1);
+  const s = survivalCurve(params, maxLen - 1);
+  let ll = 0;
+  for (const c of cohorts) {
+    for (let j = 0; j < c.length - 1; j++) {
+      const churned = c[j] - c[j + 1];
+      if (churned > 0) ll += churned * Math.log(p[j]);
+    }
+    ll += c[c.length - 1] * Math.log(s[c.length - 2]);
+  }
+  return ll;
+}
+
+function validateCohorts(cohorts: number[][]): void {
+  if (!Array.isArray(cohorts) || cohorts.length === 0) {
+    throw new RangeError("cohorts must be a non-empty array of cohort series");
+  }
+  for (const c of cohorts) {
+    if (!Array.isArray(c) || c.length < 2) {
+      throw new RangeError("each cohort needs at least 2 observations (acquisition + 1 period)");
+    }
+    let prev = Infinity;
+    for (const v of c) {
+      if (!(v > 0)) throw new RangeError(`cohort counts must be positive, received ${v}`);
+      if (v > prev) throw new RangeError("cohort counts must be non-increasing");
+      prev = v;
+    }
+  }
+}
+
+/**
+ * マルチコホート同時推定：開始期の異なる複数コホート（観測長は不揃いでよい）から
+ * 1 組の (α, β) を最尤推定する。人数で入力するとコホート規模で自然に加重される。
+ *
+ * 参照値：Fader "Fitting the sBG Model to Multi-Cohort Data" の合成データ
+ * [[10000,8000,6480,5307,4391],[10000,8000,6480,5307],[10000,8000,6480],[10000,8000]]
+ * で α≈3.80, β≈15.19（Apache-2 参照実装のテスト値と一致することを確認済み）。
+ *
+ * @throws {RangeError} コホートが空・2点未満・非正・増加している場合
+ */
+export function fitSbgMultiCohort(cohorts: number[][]): FitSbgResult {
+  validateCohorts(cohorts);
+  const { alpha, beta } = maximize((a, b) =>
+    logLikelihoodMultiCohort({ alpha: a, beta: b }, cohorts),
+  );
+  return { alpha, beta, logLik: logLikelihoodMultiCohort({ alpha, beta }, cohorts) };
+}
+
 export interface CohortLtvOptions extends DelOptions {
   /** 1 期あたりの顧客単価（売上 or 粗利。どちらを入れたかで LTV の意味が決まる） */
   revenuePerPeriod: number;

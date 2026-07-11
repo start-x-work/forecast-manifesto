@@ -16,5 +16,7 @@ export {
   discountedExpectedLifetime,
   discountedExpectedResidualLifetime,
   cohortLtv,
+  fitSbgMultiCohort,
+  logLikelihoodMultiCohort,
 } from "./sbg.js";
 export type { SbgParams, FitSbgResult, DelOptions, CohortLtvOptions } from "./sbg.js";
