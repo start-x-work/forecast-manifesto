@@ -1,0 +1,49 @@
+{
+  "name": "@forecast-manifesto/sbg",
+  "version": "0.1.0",
+  "description": "契約型（サブスク）CLV：shifted-beta-geometric（Fader & Hardie 2007）。解約構造・残存カーブ・割引期待在籍（DEL/DERL）。",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/start-x-work/forecast-manifesto.git",
+    "directory": "packages/sbg"
+  },
+  "homepage": "https://github.com/start-x-work/forecast-manifesto",
+  "keywords": [
+    "sbg",
+    "shifted-beta-geometric",
+    "retention",
+    "churn",
+    "subscription",
+    "clv",
+    "start-x"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
