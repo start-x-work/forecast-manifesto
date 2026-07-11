@@ -86,7 +86,7 @@ const value = clv(rfm[0], p, gg, { horizonMonths: 12, monthlyDiscount: 0.01, mar
 ```ts
 import { identifyKWithInterval } from "@forecast-manifesto/solver";
 
-const { K, ci } = identifyKWithInterval(1.4, 0.512, { nCustomers: 2000 });
+const { K, ci } = identifyKWithInterval(1.4, 0.5461, { nCustomers: 2000 });
 console.log(K, ci); // 0.75, [0.68, 0.83] — 母数 2,000 人ならこの幅がある
 ```
 
