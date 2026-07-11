@@ -88,6 +88,59 @@ export function duplicationMatrix(model: DirichletModel): number[][] {
   return D;
 }
 
+export interface PenetrationFitRow {
+  name: string;
+  share: number;
+  observedPenetration: number;
+  theoreticalPenetration: number;
+  /** 理論 − 観測 */
+  diff: number;
+}
+
+export interface PenetrationFitCheck {
+  rows: PenetrationFitRow[];
+  /** |理論 − 観測| の平均 */
+  mae: number;
+  /** 最大乖離のブランド */
+  worst: PenetrationFitRow;
+}
+
+/**
+ * 当てはまり診断：理論ブランド浸透率と観測浸透率の乖離を返す。
+ * デリシュレーが仮定する定常構造からの逸脱（ニッチ・過剰ロイヤルティ等）の
+ * 検出に使う——乖離が大きいブランドは「モデルが語れない何か」を持っている。
+ *
+ * @param observed name と observedPenetration の配列（fitDirichlet 入力の brands をそのまま渡せる）
+ * @throws {RangeError} observed が空、またはモデルに無いブランドを含む場合
+ */
+export function penetrationFitCheck(
+  model: DirichletModel,
+  observed: { name: string; observedPenetration?: number }[],
+): PenetrationFitCheck {
+  const withObs = observed.filter((b) => b.observedPenetration !== undefined);
+  if (withObs.length === 0) {
+    throw new RangeError("penetrationFitCheck requires at least one observedPenetration");
+  }
+  const shareByName = new Map(model.brands.map((b) => [b.name, b.marketShare]));
+  const rows: PenetrationFitRow[] = withObs.map((b) => {
+    const share = shareByName.get(b.name);
+    if (share === undefined) {
+      throw new RangeError(`brand "${b.name}" is not in the model`);
+    }
+    const theoretical = brandPenetration(model, model.S * share);
+    return {
+      name: b.name,
+      share,
+      observedPenetration: b.observedPenetration!,
+      theoreticalPenetration: theoretical,
+      diff: theoretical - b.observedPenetration!,
+    };
+  });
+  const mae = rows.reduce((s, r) => s + Math.abs(r.diff), 0) / rows.length;
+  const worst = rows.reduce((w, r) => (Math.abs(r.diff) > Math.abs(w.diff) ? r : w), rows[0]);
+  return { rows, mae, worst };
+}
+
 export interface DoubleJeopardyRow {
   name: string;
   share: number;

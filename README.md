@@ -172,6 +172,7 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 | `brandMetrics(model, brandName?)` | 理論浸透率・購買頻度・SCR・100%ロイヤル率 |
 | `duplicationMatrix(model)` | ブランド間購買重複（重複購買の法則） |
 | `doubleJeopardyTable(model)` | シェア昇順の浸透率×頻度表（DJ線） |
+| `penetrationFitCheck(model, observed)` | 当てはまり診断（理論 vs 観測浸透率の乖離・MAE） |
 
 R `NBDdirichlet` 同梱の歯磨き粉市場で公表値（M=1.456, K=0.78, S=1.55）を再現 → [docs/07](./docs/07-dirichlet.md)
 
@@ -180,6 +181,7 @@ R `NBDdirichlet` 同梱の歯磨き粉市場で公表値（M=1.456, K=0.78, S=1.
 | 関数 | 役割 |
 |------|------|
 | `fitSbg(retention)` | コホート残存率から shifted-beta-geometric を最尤推定 |
+| `fitSbgMultiCohort(cohorts)` | 開始期の異なる複数コホートの同時推定（観測長不揃い可） |
 | `survivalCurve` / `retentionCurve` | 生存カーブ／期次リテンション（漸増＝生存者バイアス） |
 | `expectedTenure(params, horizon?)` | 期待在籍期間（α>1 は閉形式） |
 | `cohortLtv(params, { discount, revenuePerPeriod, horizon? })` | コホート LTV（割引率対応 ＝ 単価 × DEL） |
@@ -196,6 +198,8 @@ npx @forecast-manifesto/cli analyze transactions.csv \
   --observation-end 2026-06-30 --horizon 12 --margin 0.3 --bootstrap 200 --format md
 npx @forecast-manifesto/cli identify-k --m 1.4 --penetration 0.5461 --n 2000
 npx @forecast-manifesto/cli dirichlet --config market.json
+npx @forecast-manifesto/cli sbg --retention 0.87,0.74,0.65 --revenue 12000
+npx @forecast-manifesto/cli validate transactions.csv --split-date 2026-03-31 --observation-end 2026-06-30
 ```
 
 入力 CSV は `customerId,date,amount`（UTF-8・ヘッダ必須・クオート対応）。不正行は行番号付きエラー。出力は `--format md|json`（md はそのまま顧問レポートに貼れる体裁）。
