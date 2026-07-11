@@ -118,8 +118,10 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | [04](./docs/04-bp10.md) | BP-10 設問テンプレート＋集計方法 |
 | [05](./docs/05-boundaries.md) | 公開/非公開の線引き宣言 |
 | [05b](./docs/05b-clv.md) | 顧客資産の思想（NBD の家系図：市場 → 顧客） |
+| [06](./docs/06-incrementality.md) | 増分検証の設計（決定木・チェックリスト・iROAS の読み方） |
 | [07](./docs/07-dirichlet.md) | 多ブランド市場構造（ダブルジェパディ・購買重複の法則） |
 | [08](./docs/08-uncertainty.md) | 不確実性の定量化（点ではなく、幅で語る） |
+| [09](./docs/09-sbg.md) | 契約型の解約構造（リテンションは「上がって見える」） |
 
 ---
 
@@ -172,6 +174,28 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 
 R `NBDdirichlet` 同梱の歯磨き粉市場で公表値（M=1.456, K=0.78, S=1.55）を再現 → [docs/07](./docs/07-dirichlet.md)
 
+## パッケージ：`@forecast-manifesto/sbg`
+
+| 関数 | 役割 |
+|------|------|
+| `fitSbg(retention)` | コホート残存率から shifted-beta-geometric を最尤推定 |
+| `survivalCurve` / `retentionCurve` | 生存カーブ／期次リテンション（漸増＝生存者バイアス） |
+| `expectedTenure(params, horizon?)` | 期待在籍期間（α>1 は閉形式） |
+| `discountedExpectedLifetime` / `discountedExpectedResidualLifetime` | DEL／DERL（2F1 閉形式） |
+
+Fader & Hardie (2007) の High End / Regular 両セグメントで公表値（α=0.668/β=3.806、α=0.704/β=1.182）と7年先外挿を再現 → [docs/09](./docs/09-sbg.md)
+
+## CLI：`@forecast-manifesto/cli`
+
+```bash
+npx @forecast-manifesto/cli analyze transactions.csv \
+  --observation-end 2026-06-30 --horizon 12 --margin 0.3 --bootstrap 200 --format md
+npx @forecast-manifesto/cli identify-k --m 1.4 --penetration 0.5461 --n 2000
+npx @forecast-manifesto/cli dirichlet --config market.json
+```
+
+入力 CSV は `customerId,date,amount`（UTF-8・ヘッダ必須・クオート対応）。不正行は行番号付きエラー。出力は `--format md|json`（md はそのまま顧問レポートに貼れる体裁）。
+
 ---
 
 ## 試す / 頼む
@@ -193,6 +217,7 @@ npm run example:clv       # 顧客資産（RFM → BG/NBD → CLV）の実例
 npm run example:validate  # 検証レポート（CDNOW 較正/検証）の実例
 npm run example:interval  # 「幅で語る」不確実性の実例
 npm run example:dirichlet # 多ブランド市場構造（DJ表・SCR）の実例
+npm run example:sbg       # 契約型（サブスク）解約構造の実例
 ```
 
 ---
