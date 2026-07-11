@@ -1,6 +1,6 @@
 {
   "name": "@forecast-manifesto/sbg",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "契約型（サブスク）CLV：shifted-beta-geometric（Fader & Hardie 2007）。解約構造・残存カーブ・割引期待在籍（DEL/DERL）。",
   "license": "Apache-2.0",
   "type": "module",

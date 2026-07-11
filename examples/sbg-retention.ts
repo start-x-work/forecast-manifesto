@@ -11,6 +11,7 @@ import {
   survivalCurve,
   retentionCurve,
   discountedExpectedResidualLifetime,
+  cohortLtv,
 } from "@forecast-manifesto/sbg";
 
 const SEGMENTS = {
@@ -33,7 +34,9 @@ for (const [name, data] of Object.entries(SEGMENTS)) {
     `  期次リテンション: ${r.map((v) => (v * 100).toFixed(0) + "%").join(" → ")}（漸増＝生存者バイアス）`,
   );
   const derl = discountedExpectedResidualLifetime(fit, { discount: 0.1, survivedPeriods: 7 });
-  console.log(`  7年生存者の残存期待（割引10%）: ${derl.toFixed(2)} 期分\n`);
+  console.log(`  7年生存者の残存期待（割引10%）: ${derl.toFixed(2)} 期分`);
+  const ltv = cohortLtv(fit, { discount: 0.1, revenuePerPeriod: 12000 });
+  console.log(`  コホートLTV（年額12,000円・割引10%）: ${ltv.toFixed(0)} 円/人\n`);
 }
 
 console.log("→ 個人のリテンションは一定でも、コホートの更新率は上がって見える（docs/09）");
