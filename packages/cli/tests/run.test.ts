@@ -97,3 +97,65 @@ describe("run dirichlet", () => {
     expect(r.output).toMatch(/ダブルジェパディ/);
   });
 });
+
+describe("run sbg", () => {
+  it("fits a single cohort and prints the churn report", () => {
+    const r = run(["sbg", "--retention", "0.869,0.743,0.653,0.593,0.551,0.517,0.491", "--revenue", "12000"]);
+    expect(r.code).toBe(0);
+    expect(r.output).toMatch(/α=0\.668/);
+    expect(r.output).toMatch(/β=3\.806/);
+    expect(r.output).toMatch(/コホートLTV/);
+    expect(r.output).toMatch(/生存者バイアス/);
+  });
+
+  it("fits multi-cohort counts from a file", () => {
+    const dir = mkdtempSync(join(tmpdir(), "fmcli-"));
+    const f = join(dir, "cohorts.csv");
+    writeFileSync(f, "10000,8000,6480,5307,4391\n10000,8000,6480,5307\n10000,8000,6480\n10000,8000\n");
+    const r = run(["sbg", "--cohorts-file", f, "--format", "json"]);
+    expect(r.code).toBe(0);
+    const parsed = JSON.parse(r.output);
+    expect(Math.abs(parsed.alpha - 3.8)).toBeLessThan(0.05);
+    expect(Math.abs(parsed.beta - 15.19)).toBeLessThan(0.2);
+  });
+
+  it("errors without input and on bad numbers", () => {
+    expect(run(["sbg"]).code).toBe(1);
+    const r = run(["sbg", "--retention", "0.8,oops"]);
+    expect(r.code).toBe(1);
+    expect(r.output).toMatch(/comma-separated numbers/);
+  });
+});
+
+describe("run validate — CDNOW 完走", () => {
+  it("produces the calibration/holdout report", () => {
+    const r = run(["validate", CDNOW_CSV, "--split-date", "1997-09-30", "--observation-end", "1998-06-30"]);
+    expect(r.code).toBe(0);
+    expect(r.output).toMatch(/# 検証レポート/);
+    expect(r.output).toMatch(/r=0\.24/);
+    expect(r.output).toMatch(/相対誤差 4\./); // 最終累積誤差 ~4.1%
+    expect(r.output).toMatch(/7\+/);
+  }, 120_000);
+});
+
+describe("run dirichlet — 当てはまり診断", () => {
+  it("adds the fit-check table when observedPenetration is present", () => {
+    const dir = mkdtempSync(join(tmpdir(), "fmcli-"));
+    const cfg = join(dir, "d.json");
+    writeFileSync(
+      cfg,
+      JSON.stringify({
+        categoryPenetration: 0.56,
+        categoryBuyRate: 2.6,
+        brands: [
+          { name: "A", marketShare: 0.25, observedPenetration: 0.2 },
+          { name: "B", marketShare: 0.19, observedPenetration: 0.17 },
+        ],
+      }),
+    );
+    const r = run(["dirichlet", "--config", cfg]);
+    expect(r.code).toBe(0);
+    expect(r.output).toMatch(/当てはまり診断/);
+    expect(r.output).toMatch(/平均乖離/);
+  });
+});
