@@ -9,6 +9,8 @@ import {
   discountedExpectedLifetime,
   discountedExpectedResidualLifetime,
   cohortLtv,
+  fitSbgMultiCohort,
+  logLikelihoodMultiCohort,
 } from "../src/sbg.js";
 
 /**
@@ -195,5 +197,46 @@ describe("cohortLtv（CARD A2b 契約：割引率対応のコホートLTV）", (
   it("validates revenuePerPeriod and discount", () => {
     expect(() => cohortLtv(he, { discount: 0.1, revenuePerPeriod: 0 })).toThrow(RangeError);
     expect(() => cohortLtv(he, { discount: 0, revenuePerPeriod: 100 })).toThrow(RangeError);
+  });
+});
+
+describe("fitSbgMultiCohort — 参照値照合", () => {
+  // Fader "Fitting the sBG Model to Multi-Cohort Data" の合成データ（参照実装のテスト値）
+  const COHORTS = [
+    [10000, 8000, 6480, 5307, 4391],
+    [10000, 8000, 6480, 5307],
+    [10000, 8000, 6480],
+    [10000, 8000],
+  ];
+
+  it("reproduces alpha=3.80, beta=15.19", () => {
+    const fit = fitSbgMultiCohort(COHORTS);
+    expect(Math.abs(fit.alpha - 3.8)).toBeLessThan(0.05);
+    expect(Math.abs(fit.beta - 15.19)).toBeLessThan(0.2);
+  });
+
+  it("is deterministic (同一入力→同一出力)", () => {
+    expect(fitSbgMultiCohort(COHORTS)).toEqual(fitSbgMultiCohort(COHORTS));
+  });
+
+  it("single cohort agrees with fitSbg on the same data (rates)", () => {
+    const counts = [10000, 8690, 7430, 6530];
+    const multi = fitSbgMultiCohort([counts]);
+    const rates = fitSbg(counts.slice(1).map((v) => v / counts[0]));
+    // 尤度のスケール（人数 vs 率で1万倍）が違うため収束点は微差になる → 相対誤差で照合
+    expect(Math.abs(multi.alpha - rates.alpha) / rates.alpha).toBeLessThan(1e-3);
+    expect(Math.abs(multi.beta - rates.beta) / rates.beta).toBeLessThan(1e-3);
+  });
+
+  it("logLik matches logLikelihoodMultiCohort at the optimum", () => {
+    const fit = fitSbgMultiCohort(COHORTS);
+    expect(fit.logLik).toBeCloseTo(logLikelihoodMultiCohort(fit, COHORTS), 10);
+  });
+
+  it("validates inputs", () => {
+    expect(() => fitSbgMultiCohort([])).toThrow(RangeError);
+    expect(() => fitSbgMultiCohort([[100]])).toThrow(RangeError);       // 2点未満
+    expect(() => fitSbgMultiCohort([[100, 120]])).toThrow(RangeError);  // 増加
+    expect(() => fitSbgMultiCohort([[100, 0]])).toThrow(RangeError);    // 非正
   });
 });

@@ -4,6 +4,7 @@ import {
   brandMetrics,
   duplicationMatrix,
   doubleJeopardyTable,
+  penetrationFitCheck,
   pRGivenN,
   pZeroGivenN,
   brandPenetration,
@@ -104,5 +105,24 @@ describe("doubleJeopardyTable — ダブルジェパディ", () => {
       expect(dj[i].penetration).toBeGreaterThanOrEqual(dj[i - 1].penetration);
       expect(dj[i].buyRate).toBeGreaterThanOrEqual(dj[i - 1].buyRate);
     }
+  });
+});
+
+describe("penetrationFitCheck — 当てはまり診断", () => {
+  it("returns per-brand theoretical vs observed with mae and worst", () => {
+    const { rows, mae, worst } = penetrationFitCheck(model, toothpaste.brands);
+    expect(rows).toHaveLength(8);
+    for (const r of rows) {
+      expect(Math.abs(r.diff)).toBeLessThan(0.015); // 歯磨き粉例は良フィット
+      expect(r.theoreticalPenetration).toBeCloseTo(r.observedPenetration + r.diff, 12);
+    }
+    expect(mae).toBeGreaterThan(0);
+    expect(mae).toBeLessThan(0.01);
+    expect(Math.abs(worst.diff)).toBeGreaterThanOrEqual(mae);
+  });
+
+  it("throws on empty observations or unknown brands", () => {
+    expect(() => penetrationFitCheck(model, [])).toThrow(RangeError);
+    expect(() => penetrationFitCheck(model, [{ name: "Nope", observedPenetration: 0.1 }])).toThrow(RangeError);
   });
 });

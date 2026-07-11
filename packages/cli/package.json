@@ -1,6 +1,6 @@
 {
   "name": "@forecast-manifesto/cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "需要予測・顧客資産分析のCLI。取引ログCSVからsummarize＋CLV（区間付き）、K同定、Dirichlet市場構造をMarkdown/JSONで出力。",
   "license": "Apache-2.0",
   "type": "module",
@@ -45,8 +45,10 @@
   },
   "dependencies": {
     "@forecast-manifesto/clv": "^0.3.0",
-    "@forecast-manifesto/dirichlet": "^0.1.1",
-    "@forecast-manifesto/solver": "^0.3.0"
+    "@forecast-manifesto/dirichlet": "^0.2.0",
+    "@forecast-manifesto/solver": "^0.3.0",
+    "@forecast-manifesto/sbg": "^0.3.0",
+    "@forecast-manifesto/validate": "^0.1.1"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

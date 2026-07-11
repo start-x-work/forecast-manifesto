@@ -32,7 +32,22 @@ import {
   fitDirichlet,
   brandMetrics,
   doubleJeopardyTable,
+  penetrationFitCheck,
 } from "@forecast-manifesto/dirichlet";
+import {
+  fitSbg,
+  fitSbgMultiCohort,
+  survivalCurve,
+  retentionCurve,
+  expectedTenure,
+  cohortLtv,
+} from "@forecast-manifesto/sbg";
+import {
+  splitCalibrationHoldout,
+  conditionalExpectationByFrequency,
+  trackingCumulative,
+  mape,
+} from "@forecast-manifesto/validate";
 import { parseTransactionsCsv } from "./csv.js";
 import {
   parseArgs,
@@ -48,6 +63,9 @@ Usage:
   forecast-manifesto analyze <transactions.csv> --observation-end 2026-06-30 [--horizon 12] [--margin 0.3] [--discount 0.01] [--top 10] [--bootstrap 200] [--seed 1] [--format md|json]
   forecast-manifesto identify-k --m <mean purchases> --penetration <rate> [--n <customers>] [--format md|json]
   forecast-manifesto dirichlet --config <input.json> [--format md|json]
+  forecast-manifesto sbg --retention 0.87,0.74,0.65 [--periods 12] [--discount 0.1] [--revenue 12000] [--format md|json]
+  forecast-manifesto sbg --cohorts-file cohorts.csv   (1行 = 1コホートの期別残存人数)
+  forecast-manifesto validate <transactions.csv> --split-date 1997-09-30 --observation-end 1998-06-30 [--format md|json]
 
 Input CSV: UTF-8, header required (customerId,date,amount).`;
 
@@ -177,9 +195,11 @@ function dirichletCmd(argv: string[]): string {
   const model = fitDirichlet(input);
   const metrics = brandMetrics(model);
   const dj = doubleJeopardyTable(model);
+  const hasObserved = Array.isArray(input.brands) && input.brands.some((b: { observedPenetration?: number }) => b.observedPenetration !== undefined);
+  const fitCheck = hasObserved ? penetrationFitCheck(model, input.brands) : undefined;
 
   if (format === "json") {
-    return JSON.stringify({ model: { M: model.M, K: model.K, S: model.S }, brandMetrics: metrics, doubleJeopardy: dj }, null, 2);
+    return JSON.stringify({ model: { M: model.M, K: model.K, S: model.S }, brandMetrics: metrics, doubleJeopardy: dj, fitCheck }, null, 2);
   }
   const L: string[] = [];
   L.push(`# 多ブランド市場構造（Dirichlet NBD）`);
@@ -194,7 +214,135 @@ function dirichletCmd(argv: string[]): string {
     );
   }
   L.push("");
+  if (fitCheck) {
+    L.push(`## 当てはまり診断（理論浸透率 vs 観測）`);
+    L.push("");
+    L.push(`| ブランド | 観測 | 理論 | 乖離 |`);
+    L.push(`|---|---:|---:|---:|`);
+    for (const r of fitCheck.rows) {
+      L.push(`| ${r.name} | ${fmtPct(r.observedPenetration)} | ${fmtPct(r.theoreticalPenetration)} | ${(r.diff >= 0 ? "+" : "") + fmtPct(r.diff)} |`);
+    }
+    L.push("");
+    L.push(`- 平均乖離 ${fmtPct(fitCheck.mae)}／最大乖離 ${fitCheck.worst.name}（${(fitCheck.worst.diff >= 0 ? "+" : "") + fmtPct(fitCheck.worst.diff)}）`);
+    L.push("");
+  }
   L.push(`> シェア昇順で浸透率も頻度も下がる＝ダブルジェパディ（詳細は docs/07）。`);
+  return L.join("\n");
+}
+
+
+function sbgCmd(argv: string[]): string {
+  const args = parseArgs(argv);
+  const format = optionalString(args, "format") ?? "md";
+  const periods = optionalNumber(args, "periods") ?? 12;
+  const discount = optionalNumber(args, "discount") ?? 0.1;
+  const revenue = optionalNumber(args, "revenue");
+
+  const retentionArg = optionalString(args, "retention");
+  const cohortsFile = optionalString(args, "cohorts-file");
+  if (!retentionArg && !cohortsFile) {
+    throw new Error("sbg requires --retention 0.87,0.74,... or --cohorts-file <csv>.\n\n" + USAGE);
+  }
+
+  let fit: { alpha: number; beta: number; logLik: number };
+  let sourceNote: string;
+  if (cohortsFile) {
+    const cohorts = readFileSync(cohortsFile, "utf8")
+      .trim()
+      .split("\n")
+      .filter((l) => l.trim() !== "")
+      .map((l, i) => {
+        const nums = l.split(",").map((v) => Number(v.trim()));
+        if (nums.some((v) => !Number.isFinite(v))) {
+          throw new Error(`line ${i + 1}: cohort counts must be numbers (received "${l.trim()}")`);
+        }
+        return nums;
+      });
+    fit = fitSbgMultiCohort(cohorts);
+    sourceNote = `マルチコホート同時推定（${cohorts.length} コホート）`;
+  } else {
+    const retention = retentionArg!.split(",").map((v) => Number(v.trim()));
+    if (retention.some((v) => !Number.isFinite(v))) {
+      throw new Error(`--retention must be comma-separated numbers (received "${retentionArg}")`);
+    }
+    fit = fitSbg(retention);
+    sourceNote = `単一コホート（${retention.length} 期）`;
+  }
+
+  const params = { alpha: fit.alpha, beta: fit.beta };
+  const survival = survivalCurve(params, periods);
+  const retentionSeries = retentionCurve(params, periods);
+  const tenure = fit.alpha > 1 ? expectedTenure(params) : expectedTenure(params, 120);
+  const ltv = revenue !== undefined ? cohortLtv(params, { discount, revenuePerPeriod: revenue }) : undefined;
+
+  if (format === "json") {
+    return JSON.stringify(
+      { alpha: fit.alpha, beta: fit.beta, logLik: fit.logLik, survival, retention: retentionSeries, expectedTenure: tenure, cohortLtv: ltv },
+      null,
+      2,
+    );
+  }
+  const L: string[] = [];
+  L.push(`# 解約構造レポート（shifted-beta-geometric）`);
+  L.push("");
+  L.push(`- 推定: α=${fit.alpha.toFixed(3)}, β=${fit.beta.toFixed(3)}（${sourceNote}）`);
+  L.push(`- 期待在籍期間: ${tenure.toFixed(2)} 期${fit.alpha <= 1 ? "（α≤1のため120期打ち切り）" : ""}`);
+  if (ltv !== undefined) {
+    L.push(`- コホートLTV: ${ltv.toFixed(0)}（単価 ${revenue}／期・割引 ${fmtPct(discount)}）`);
+  }
+  L.push("");
+  L.push(`| 期 | 残存率（外挿込み） | 期次リテンション |`);
+  L.push(`|---:|---:|---:|`);
+  for (let t = 0; t < periods; t++) {
+    L.push(`| ${t + 1} | ${fmtPct(survival[t])} | ${fmtPct(retentionSeries[t])} |`);
+  }
+  L.push("");
+  L.push(`> リテンションの漸増は生存者バイアス（個人は改善していない）。docs/09 参照。`);
+  return L.join("\n");
+}
+
+function validateCmd(argv: string[]): string {
+  const args = parseArgs(argv);
+  const csvPath = args.positional[0];
+  if (!csvPath) throw new Error("validate requires a CSV path.\n\n" + USAGE);
+  const splitDate = new Date(requireString(args, "split-date") + "T00:00:00Z");
+  const observationEnd = new Date(requireString(args, "observation-end") + "T00:00:00Z");
+  if (Number.isNaN(splitDate.getTime()) || Number.isNaN(observationEnd.getTime())) {
+    throw new Error("--split-date and --observation-end must be ISO dates (e.g. 1997-09-30)");
+  }
+  const format = optionalString(args, "format") ?? "md";
+
+  const transactions = parseTransactionsCsv(readFileSync(csvPath, "utf8"));
+  const { calibration, holdout } = splitCalibrationHoldout(transactions, splitDate, observationEnd);
+  const params = fitBgNbd(calibration);
+  const freq = conditionalExpectationByFrequency(calibration, holdout, params, { capFrequency: 7 });
+  const track = trackingCumulative(calibration, transactions, params, { splitDate, observationEnd, bucket: "week" });
+  const holdoutRows = track.filter((r) => !r.inCalibration);
+  const last = track[track.length - 1];
+  const finalErr = Math.abs(last.predicted - last.actual) / last.actual;
+
+  if (format === "json") {
+    return JSON.stringify(
+      { customers: calibration.length, params: { r: params.r, alpha: params.alpha, a: params.a, b: params.b }, byFrequency: freq, finalCumulative: { predicted: last.predicted, actual: last.actual, relativeError: finalErr }, holdoutWeeklyMape: mape(holdoutRows) },
+      null,
+      2,
+    );
+  }
+  const L: string[] = [];
+  L.push(`# 検証レポート（較正/検証分割）`);
+  L.push("");
+  L.push(`- コホート: ${calibration.length} 顧客（較正〜${requireString(args, "split-date")} / 検証〜${requireString(args, "observation-end")}）`);
+  L.push(`- BG/NBD: r=${params.r.toFixed(3)}, α=${params.alpha.toFixed(3)}, a=${params.a.toFixed(3)}, b=${params.b.toFixed(3)}`);
+  L.push(`- 最終累積: 予測 ${last.predicted.toFixed(0)} vs 実測 ${last.actual}（相対誤差 ${fmtPct(finalErr)}）`);
+  L.push(`- 検証期間の週次 MAPE: ${mape(holdoutRows).toFixed(2)}%`);
+  L.push("");
+  L.push(`| 較正頻度 | 顧客数 | 予測平均 | 実測平均 |`);
+  L.push(`|---:|---:|---:|---:|`);
+  for (const r of freq) {
+    L.push(`| ${r.frequency === 7 ? "7+" : r.frequency} | ${r.nCustomers} | ${r.predicted.toFixed(3)} | ${r.actual.toFixed(3)} |`);
+  }
+  L.push("");
+  L.push(`> 予測は当てるゲームではない。構造が実測を再現しているかを確認してから使う（docs/08）。`);
   return L.join("\n");
 }
 
@@ -208,6 +356,10 @@ export function run(argv: string[]): { code: number; output: string } {
         return { code: 0, output: identifyKCmd(rest) };
       case "dirichlet":
         return { code: 0, output: dirichletCmd(rest) };
+      case "sbg":
+        return { code: 0, output: sbgCmd(rest) };
+      case "validate":
+        return { code: 0, output: validateCmd(rest) };
       case undefined:
       case "help":
       case "--help":

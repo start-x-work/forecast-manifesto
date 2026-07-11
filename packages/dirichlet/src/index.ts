@@ -22,5 +22,5 @@ export {
 } from "./model.js";
 export type { DirichletModel } from "./model.js";
 
-export { brandMetrics, duplicationMatrix, doubleJeopardyTable } from "./metrics.js";
-export type { BrandMetricsRow, DoubleJeopardyRow } from "./metrics.js";
+export { brandMetrics, duplicationMatrix, doubleJeopardyTable, penetrationFitCheck } from "./metrics.js";
+export type { BrandMetricsRow, DoubleJeopardyRow, PenetrationFitRow, PenetrationFitCheck } from "./metrics.js";
