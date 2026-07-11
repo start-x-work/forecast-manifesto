@@ -11,13 +11,14 @@ Marketing-OS Manifesto に続く「設計と編集」シリーズ第 2 弾（需
 ## スタック：市場 → 顧客を同一の数学血統で貫く
 
 ```
-A1  市場の NBD ✅ 公開済         A2  顧客の NBD ✅ 追加
-    @forecast-manifesto/solver       @forecast-manifesto/clv
-    NBD ＋ BP-10                       BG/NBD ＋ Gamma-Gamma
-    浸透率・売上の天井                 生存・期待購買・CLV
-        │                                  │
-        └────── 同じ負の二項分布 ──────────┘
-        市場の NBD → Schmittlein/Fader（顧客の NBD）
+A1  市場の NBD ✅ ＋ Dirichlet ✅     A2  顧客の NBD ✅
+    @forecast-manifesto/solver           @forecast-manifesto/clv
+    NBD ＋ BP-10                           BG/NBD ＋ Gamma-Gamma
+    @forecast-manifesto/dirichlet          浸透率×頻度×金額 → CLV
+    多ブランド市場構造（DJ・重複の法則）
+        │                                      │
+        └──────── 同じ負の二項分布 ────────────┘
+        市場の NBD → GEC（Dirichlet）→ Schmittlein/Fader（顧客の NBD）
 ```
 
 market（solver）で「市場に何回買う人がどれだけいるか」を、customer（clv）で「この顧客が今後何回・いくら買うか」を、**同じ分布**で扱う。→ [docs/05b-clv.md](./docs/05b-clv.md)
@@ -117,6 +118,7 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | [04](./docs/04-bp10.md) | BP-10 設問テンプレート＋集計方法 |
 | [05](./docs/05-boundaries.md) | 公開/非公開の線引き宣言 |
 | [05b](./docs/05b-clv.md) | 顧客資産の思想（NBD の家系図：市場 → 顧客） |
+| [07](./docs/07-dirichlet.md) | 多ブランド市場構造（ダブルジェパディ・購買重複の法則） |
 | [08](./docs/08-uncertainty.md) | 不確実性の定量化（点ではなく、幅で語る） |
 
 ---
@@ -159,6 +161,17 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 
 不確実性 API：`identifyKWithInterval`（solver）／`fitBgNbdWithInterval`・`clvWithInterval`・`summarizeWithInterval`（clv）→ [docs/08](./docs/08-uncertainty.md)
 
+## パッケージ：`@forecast-manifesto/dirichlet`
+
+| 関数 | 役割 |
+|------|------|
+| `fitDirichlet(input)` | カテゴリ浸透率・購買頻度・ブランドシェアから M・K・S を同定 |
+| `brandMetrics(model, brandName?)` | 理論浸透率・購買頻度・SCR・100%ロイヤル率 |
+| `duplicationMatrix(model)` | ブランド間購買重複（重複購買の法則） |
+| `doubleJeopardyTable(model)` | シェア昇順の浸透率×頻度表（DJ線） |
+
+R `NBDdirichlet` 同梱の歯磨き粉市場で公表値（M=1.456, K=0.78, S=1.55）を再現 → [docs/07](./docs/07-dirichlet.md)
+
 ---
 
 ## 試す / 頼む
@@ -179,6 +192,7 @@ npm run example:forecast  # 新商品売上予測の実例
 npm run example:clv       # 顧客資産（RFM → BG/NBD → CLV）の実例
 npm run example:validate  # 検証レポート（CDNOW 較正/検証）の実例
 npm run example:interval  # 「幅で語る」不確実性の実例
+npm run example:dirichlet # 多ブランド市場構造（DJ表・SCR）の実例
 ```
 
 ---

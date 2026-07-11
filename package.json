@@ -14,7 +14,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @forecast-manifesto/solver && npm run build -w @forecast-manifesto/clv && npm run build -w @forecast-manifesto/validate",
+    "build": "npm run build -w @forecast-manifesto/solver && npm run build -w @forecast-manifesto/clv && npm run build -w @forecast-manifesto/validate && npm run build -w @forecast-manifesto/dirichlet",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "example:k": "tsx examples/k-identification.ts",
@@ -22,7 +22,8 @@
     "example:clv": "tsx examples/clv-cohort.ts",
     "example:validate": "tsx examples/validate-cdnow.ts",
     "example:interval": "tsx examples/interval.ts",
-    "test:coverage": "npm run test:coverage --workspaces --if-present"
+    "test:coverage": "npm run test:coverage --workspaces --if-present",
+    "example:dirichlet": "tsx examples/dirichlet-market.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
