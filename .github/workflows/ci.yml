@@ -25,3 +25,4 @@ jobs:
       - run: npm run example:clv
       - run: npm run example:validate
       - run: npm run example:interval
+      - run: npm run example:dirichlet
