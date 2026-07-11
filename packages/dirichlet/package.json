@@ -1,6 +1,6 @@
 {
   "name": "@forecast-manifesto/dirichlet",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "多ブランド市場構造：デリシュレー NBD（Goodhardt-Ehrenberg-Chatfield 1984）。ダブルジェパディ・購買重複の法則をコードで検証する。",
   "license": "Apache-2.0",
   "type": "module",
@@ -41,7 +41,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@forecast-manifesto/solver": "^0.2.0"
+    "@forecast-manifesto/solver": "^0.3.0"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

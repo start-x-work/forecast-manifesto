@@ -35,6 +35,11 @@ export {
   topBuyersRevenueShare,
 } from "./truncatedNbd.js";
 export type { FitTruncatedNbdOptions, FitTruncatedNbdResult } from "./truncatedNbd.js";
+export { fitTruncatedNbdWithInterval } from "./truncatedNbdInterval.js";
+export type {
+  FitTruncatedNbdWithIntervalOptions,
+  FitTruncatedNbdWithIntervalResult,
+} from "./truncatedNbdInterval.js";
 
 export { clv, summarize } from "./clv.js";
 export type {
