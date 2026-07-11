@@ -8,6 +8,7 @@ import {
   expectedTenure,
   discountedExpectedLifetime,
   discountedExpectedResidualLifetime,
+  cohortLtv,
 } from "../src/sbg.js";
 
 /**
@@ -159,5 +160,40 @@ describe("input validation", () => {
     expect(() => survivalCurve({ alpha: 0, beta: 1 }, 5)).toThrow(RangeError);
     expect(() => retentionCurve({ alpha: 1, beta: -1 }, 5)).toThrow(RangeError);
     expect(() => churnProbabilities({ alpha: 1, beta: 1 }, 0)).toThrow(RangeError);
+  });
+});
+
+describe("cohortLtv（CARD A2b 契約：割引率対応のコホートLTV）", () => {
+  const he = { alpha: 0.668, beta: 3.806 };
+  const opts = { discount: 0.1, revenuePerPeriod: 1000 };
+
+  it("equals revenuePerPeriod × DEL (analytic consistency)", () => {
+    const ltv = cohortLtv(he, opts);
+    const del = discountedExpectedLifetime(he, { discount: 0.1 });
+    expect(ltv).toBeCloseTo(1000 * del, 8);
+  });
+
+  it("closed form matches the truncated sum for a long horizon", () => {
+    const closed = cohortLtv(he, opts);
+    const truncated = cohortLtv(he, { ...opts, horizon: 300 });
+    expect(closed).toBeCloseTo(truncated, 4);
+  });
+
+  it("decreases as the discount rate rises and scales linearly with revenue", () => {
+    expect(cohortLtv(he, { discount: 0.2, revenuePerPeriod: 1000 })).toBeLessThan(cohortLtv(he, opts));
+    expect(cohortLtv(he, { discount: 0.1, revenuePerPeriod: 2000 })).toBeCloseTo(2 * cohortLtv(he, opts), 8);
+  });
+
+  it("is deterministic: identical inputs give identical results (推定に乱数なし)", () => {
+    const data = [0.869, 0.743, 0.653, 0.593];
+    const a = fitSbg(data);
+    const b = fitSbg(data);
+    expect(a).toEqual(b);
+    expect(cohortLtv(a, opts)).toBe(cohortLtv(b, opts));
+  });
+
+  it("validates revenuePerPeriod and discount", () => {
+    expect(() => cohortLtv(he, { discount: 0.1, revenuePerPeriod: 0 })).toThrow(RangeError);
+    expect(() => cohortLtv(he, { discount: 0, revenuePerPeriod: 100 })).toThrow(RangeError);
   });
 });

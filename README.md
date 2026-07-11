@@ -182,9 +182,12 @@ R `NBDdirichlet` 同梱の歯磨き粉市場で公表値（M=1.456, K=0.78, S=1.
 | `fitSbg(retention)` | コホート残存率から shifted-beta-geometric を最尤推定 |
 | `survivalCurve` / `retentionCurve` | 生存カーブ／期次リテンション（漸増＝生存者バイアス） |
 | `expectedTenure(params, horizon?)` | 期待在籍期間（α>1 は閉形式） |
+| `cohortLtv(params, { discount, revenuePerPeriod, horizon? })` | コホート LTV（割引率対応 ＝ 単価 × DEL） |
 | `discountedExpectedLifetime` / `discountedExpectedResidualLifetime` | DEL／DERL（2F1 閉形式） |
 
 Fader & Hardie (2007) の High End / Regular 両セグメントで公表値（α=0.668/β=3.806、α=0.704/β=1.182）と7年先外挿を再現 → [docs/09](./docs/09-sbg.md)
+
+**非契約型との使い分け**：解約イベントが**観測できる**（サブスク・SaaS・会費）→ `sbg`。解約が観測できず「買わなくなるだけ」（EC・小売）→ `clv`（BG/NBD）。詳細な対比表は [docs/09](./docs/09-sbg.md)。
 
 ## CLI：`@forecast-manifesto/cli`
 
