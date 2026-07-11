@@ -50,4 +50,26 @@ describe("identifyKWithInterval", () => {
     expect(() => identifyKWithInterval(M, penetration, { nCustomers: 100, level: 1.5 })).toThrow(RangeError);
     expect(() => identifyKWithInterval(0.5, 0.9, { nCustomers: 100 })).toThrow(RangeError); // 解なし
   });
+
+  it("works with opts omitted (nCustomers 既定 1000) and returns the interval contract", () => {
+    const res = identifyKWithInterval(M, penetration);
+    expect(res.iterations).toBe(200);
+    expect(res.interval.level).toBe(0.9);
+    expect(res.interval.low).toBeLessThanOrEqual(res.K);
+    expect(res.interval.high).toBeGreaterThanOrEqual(res.K);
+    // ci は後方互換フィールド：interval と同値
+    expect(res.ci).toEqual([res.interval.low, res.interval.high]);
+  });
+
+  it("is reproducible with default opts (seed 既定 1)", () => {
+    const a = identifyKWithInterval(M, penetration);
+    const b = identifyKWithInterval(M, penetration, { seed: 1 });
+    expect(a.interval).toEqual(b.interval);
+  });
+
+  it("default 200 iterations run in practical time", () => {
+    const t0 = performance.now();
+    identifyKWithInterval(M, penetration, { includeSamples: false });
+    expect(performance.now() - t0).toBeLessThan(10_000);
+  }, 30_000);
 });

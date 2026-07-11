@@ -25,6 +25,7 @@ export { identifyKWithInterval } from "./interval.js";
 export type {
   IdentifyKWithIntervalOptions,
   IdentifyKWithIntervalResult,
+  KInterval,
 } from "./interval.js";
 export { conceptShare } from "./bp10.js";
 export { unitShare, forecastRevenue } from "./unitShare.js";
