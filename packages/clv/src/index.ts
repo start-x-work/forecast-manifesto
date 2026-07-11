@@ -45,6 +45,18 @@ export type {
   SummarizeOptions,
 } from "./clv.js";
 
+export {
+  fitBgNbdWithInterval,
+  clvWithInterval,
+  summarizeWithInterval,
+} from "./bootstrap.js";
+export type {
+  BootstrapOptions,
+  FitBgNbdWithIntervalResult,
+  ClvWithIntervalResult,
+  SummaryWithIntervalResult,
+} from "./bootstrap.js";
+
 // 教材用 Pareto/NBD 参照実装（名前空間で分離）
 export * as paretoNbd from "./paretoNbd.js";
 export type { ParetoNbdParams } from "./paretoNbd.js";

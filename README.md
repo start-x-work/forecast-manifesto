@@ -1,6 +1,6 @@
 # Forecast Manifesto
 
-**需要予測の意思決定構造を、編集可能な素材として公開する。**
+**需要予測の意思決定構造を、編集可能な素材として公開する。点ではなく、幅で語る。**
 
 Marketing-OS Manifesto に続く「設計と編集」シリーズ第 2 弾（需要予測編）。数理モデル（NBD ＋ BP-10）による需要予測の**計算方法**と**メソッド選定の考え方**を OSS として公開する。
 
@@ -81,6 +81,28 @@ const [p, gg] = [fitBgNbd(rfm), fitGammaGamma(rfm)]; // 生存・頻度／金額
 const value = clv(rfm[0], p, gg, { horizonMonths: 12, monthlyDiscount: 0.01, margin: 0.3 });
 ```
 
+### 幅で語る — 点推定に区間を付ける
+
+```ts
+import { identifyKWithInterval } from "@forecast-manifesto/solver";
+
+const { K, ci } = identifyKWithInterval(1.4, 0.5461, { nCustomers: 2000 });
+console.log(K, ci); // 0.75, [0.68, 0.83] — 母数 2,000 人ならこの幅がある
+```
+
+パラメトリック・ブートストラップ（シード固定・再現可能）。`fitBgNbdWithInterval` / `clvWithInterval` / `summarizeWithInterval` も同様。→ [docs/08-uncertainty.md](./docs/08-uncertainty.md)
+
+### 検証する — 予測を当てるゲームにしない
+
+```ts
+import { splitCalibrationHoldout, trackingCumulative } from "@forecast-manifesto/validate";
+
+const { calibration, holdout } = splitCalibrationHoldout(transactions, splitDate, observationEnd);
+const track = trackingCumulative(calibration, transactions, fitBgNbd(calibration), { splitDate, observationEnd, bucket: "week" });
+```
+
+CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終累積）を再現済み。
+
 実行できる例：[`examples/`](./examples)
 
 ---
@@ -95,6 +117,7 @@ const value = clv(rfm[0], p, gg, { horizonMonths: 12, monthlyDiscount: 0.01, mar
 | [04](./docs/04-bp10.md) | BP-10 設問テンプレート＋集計方法 |
 | [05](./docs/05-boundaries.md) | 公開/非公開の線引き宣言 |
 | [05b](./docs/05b-clv.md) | 顧客資産の思想（NBD の家系図：森岡 → Fader） |
+| [08](./docs/08-uncertainty.md) | 不確実性の定量化（点ではなく、幅で語る） |
 
 ---
 
@@ -125,6 +148,17 @@ const value = clv(rfm[0], p, gg, { horizonMonths: 12, monthlyDiscount: 0.01, mar
 
 CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-2 で再現（`packages/clv/tests`）。
 
+## パッケージ：`@forecast-manifesto/validate`
+
+| 関数 | 役割 |
+|------|------|
+| `splitCalibrationHoldout(transactions, splitDate, observationEnd)` | 較正／検証分割 |
+| `conditionalExpectationByFrequency(calib, holdout, params, opts?)` | 頻度別 実測 vs 予測 |
+| `trackingCumulative(calib, transactions, params, opts)` | 累積トラッキング（FHL 2005 Figure 3 方式） |
+| `mae(pairs)` / `rmse(pairs)` / `mape(pairs)` | 誤差指標（`mape` は actual=0 を除外） |
+
+不確実性 API：`identifyKWithInterval`（solver）／`fitBgNbdWithInterval`・`clvWithInterval`・`summarizeWithInterval`（clv）→ [docs/08](./docs/08-uncertainty.md)
+
 ---
 
 ## 試す / 頼む
@@ -143,6 +177,8 @@ npm test          # Vitest（全ワークスペース）
 npm run example:k         # K 同定の実例
 npm run example:forecast  # 新商品売上予測の実例
 npm run example:clv       # 顧客資産（RFM → BG/NBD → CLV）の実例
+npm run example:validate  # 検証レポート（CDNOW 較正/検証）の実例
+npm run example:interval  # 「幅で語る」不確実性の実例
 ```
 
 ---

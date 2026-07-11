@@ -12,5 +12,19 @@
 export { lnGamma, nbdPmf, zeroPurchaseProbability, penetrationFromK } from "./nbd.js";
 export { identifyK } from "./identify.js";
 export type { IdentifyKOptions, IdentifyKResult } from "./identify.js";
+export {
+  createRng,
+  sampleNormal,
+  sampleGamma,
+  samplePoisson,
+  sampleBeta,
+  sampleNbd,
+  percentile,
+} from "./rng.js";
+export { identifyKWithInterval } from "./interval.js";
+export type {
+  IdentifyKWithIntervalOptions,
+  IdentifyKWithIntervalResult,
+} from "./interval.js";
 export { conceptShare } from "./bp10.js";
 export { unitShare, forecastRevenue } from "./unitShare.js";
