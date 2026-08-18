@@ -1,0 +1,41 @@
+name: Cleanup Merged Branches
+
+# マージ済みの claude/* 作業ブランチを一括削除する一時ワークフロー。
+# git プロキシがブランチ削除 push を 403 で拒否するため Actions 経由で行う。
+# 実行後にこのファイルは削除する。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete merged branches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          branches="
+          claude/forecast-manifesto-oss-mr53v7
+          claude/fix-repository-url
+          claude/clv-module
+          claude/link-dai9dan
+          claude/bp10-template
+          claude/v1.2-validate-uncertainty
+          claude/v1.3-dirichlet
+          claude/v1.4-sbg-cli
+          claude/p9-interval-api
+          claude/sbg-cohort-ltv
+          claude/v1.5-additions
+          "
+          for b in $branches; do
+            [ -z "$b" ] && continue
+            if gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/$b" 2>/dev/null; then
+              echo "deleted: $b"
+            else
+              echo "skip (not found or error): $b"
+            fi
+          done
