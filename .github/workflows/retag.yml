@@ -14,20 +14,20 @@ jobs:
   retag:
     runs-on: ubuntu-latest
     steps:
-      - name: Move tags to rewritten commits
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Move tags via git push (force)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAPPING: ${{ inputs.mapping }}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           printf '%s\n' "$MAPPING" | while read -r tag sha; do
             [ -z "$tag" ] && continue
-            echo "=== retag $tag -> $sha ==="
-            # 参照が存在すれば PATCH（force）、無ければ create で作成
-            if gh api "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" >/dev/null 2>&1; then
-              gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/${tag}" -f sha="${sha}" -F force=true \
-                && echo "PATCH ok" || echo "PATCH FAILED"
-            else
-              gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/${tag}" -f sha="${sha}" \
-                && echo "CREATE ok" || echo "CREATE FAILED"
-            fi
+            echo "=== $tag -> $sha ==="
+            git cat-file -e "${sha}^{commit}" 2>/dev/null && echo "object present" || echo "object MISSING"
+            git tag -f "$tag" "$sha"
+            git push -f origin "refs/tags/${tag}" && echo "PUSH ok" || echo "PUSH FAILED"
           done
