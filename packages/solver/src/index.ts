@@ -29,3 +29,11 @@ export type {
 } from "./interval.js";
 export { conceptShare } from "./bp10.js";
 export { unitShare, forecastRevenue } from "./unitShare.js";
+export { fitIntentCalibration } from "./unitShare.js";
+export type { IntentCalibrationResult } from "./unitShare.js";
+export { forecastRevenueWithInterval } from "./revenue.js";
+export type {
+  RevenueWithIntervalInput,
+  RevenueWithIntervalOptions,
+  RevenueInterval,
+} from "./revenue.js";
