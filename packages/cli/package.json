@@ -46,7 +46,7 @@
   "dependencies": {
     "@forecast-manifesto/clv": "^0.3.0",
     "@forecast-manifesto/dirichlet": "^0.2.0",
-    "@forecast-manifesto/solver": "^0.3.0",
+    "@forecast-manifesto/solver": "^0.5.0",
     "@forecast-manifesto/sbg": "^0.3.0",
     "@forecast-manifesto/validate": "^0.1.1"
   },

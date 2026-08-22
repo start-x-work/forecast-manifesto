@@ -91,6 +91,18 @@ const { K, ci } = identifyKWithInterval(1.4, 0.5461, { nCustomers: 2000 });
 console.log(K, ci); // 0.75, [0.68, 0.83] — 母数 2,000 人ならこの幅がある
 ```
 
+売上まで幅で語る（K の不確実性を浸透率ベース売上へ伝播）：
+
+```ts
+import { forecastRevenueWithInterval } from "@forecast-manifesto/solver";
+
+const r = forecastRevenueWithInterval(
+  { marketSize: 1_000_000, M: 1.4, penetration: 0.5461, unitPrice: 480 },
+  { nCustomers: 2000, seed: 1 },
+);
+console.log(r.point, r.low, r.high); // 点推定と 90%区間（母数が小さいほど広い）
+```
+
 パラメトリック・ブートストラップ（シード固定・再現可能）。`fitBgNbdWithInterval` / `clvWithInterval` / `summarizeWithInterval` も同様。→ [docs/08-uncertainty.md](./docs/08-uncertainty.md)
 
 ### 検証する — 予測を当てるゲームにしない
@@ -135,6 +147,8 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | `conceptShare(votes, targetIndex?)` | BP-10 コンセプトシェア集計 |
 | `unitShare(awareness, distribution, conceptShare, priceAdj)` | ユニットシェア |
 | `forecastRevenue(marketSize, unitShare, unitPrice)` | 売上予測 |
+| `fitIntentCalibration(pairs)` | 表明選好の補正係数（意向-行動ギャップ） |
+| `forecastRevenueWithInterval(input, opts?)` | 浸透率ベース売上＋区間（K の不確実性を伝播） |
 
 ## パッケージ：`@forecast-manifesto/clv`
 
