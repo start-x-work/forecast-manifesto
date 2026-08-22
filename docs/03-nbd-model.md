@@ -70,3 +70,41 @@ const { K, iterations } = identifyK(M, penetration);
 ## 四半期ごとの再同定
 
 K は一度求めて終わりではない。四半期ごとに再同定し、変化を市場構造のシグナルとして読む。→ [02-method-selection.md](./02-method-selection.md) の「ハイブリッド運用ルール」を参照。
+
+## 期間換算（時間スケーリング）
+
+NBD の基本性質として、観測期間 `t` に対して平均購入回数 `M` は比例し、形状 `K` は不変である。
+
+```
+M(t2) = M(t1) · (t2 / t1)      K(t2) = K(t1)
+```
+
+したがって短期観測（例：4週）から長期（例：52週＝年間）の浸透率・購入回数を外挿できる。新商品の年間需要予測に直結する（Ehrenberg の浸透率成長の性質）。
+
+```ts
+import { scaleToHorizon, penetrationAtHorizon } from "@forecast-manifesto/solver";
+
+const y = scaleToHorizon(0.35, 0.75, 4, 52); // 4週 → 52週
+// y.M ≈ 0.35 * 13, y.K = 0.75
+const p52 = penetrationAtHorizon(0.35, 0.75, 4, 52); // 年間浸透率
+```
+
+外挿は「購買機会が期間に比例して積み上がる」定常性を仮定する。強い季節性・普及過程・供給制約があると乖離するため、外挿倍率が大きい場合（既定で `t2/t1 > 12`）は `warning` を返す。長期外挿は必ず適合度検定・バックテストと併用すること。
+
+## 度数分布からの高精度同定：identifyK と fitNbdMLE の使い分け
+
+`identifyK(M, penetration)` は**平均と浸透率の2統計量だけ**で K を求める（新商品調査などコールドスタートに強い）。一方、購入回数の**度数分布**が手元にある既存商品では、分布全体を使う最尤推定 `fitNbdMLE(counts)` の方が高精度になる。
+
+```ts
+import { fitNbdMLE } from "@forecast-manifesto/solver";
+
+// counts[r] = r 回購入した人数
+const { M, K, logLik, converged } = fitNbdMLE([8000, 1200, 500, 200, 80, 20]);
+```
+
+| データ | 使う関数 |
+|---|---|
+| 要約統計（平均・浸透率）しかない新商品 | `identifyK`（浸透率マッチング） |
+| 購入回数の度数分布がある既存商品 | `fitNbdMLE`（分布全体の最尤推定） |
+
+`identifyK` は非推奨にしない。コールドスタート耐性（要約統計だけで動く）こそ本 OSS の価値だからである。

@@ -135,6 +135,9 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | `conceptShare(votes, targetIndex?)` | BP-10 コンセプトシェア集計 |
 | `unitShare(awareness, distribution, conceptShare, priceAdj)` | ユニットシェア |
 | `forecastRevenue(marketSize, unitShare, unitPrice)` | 売上予測 |
+| `scaleToHorizon(M, K, t1, t2)` | 期間換算（M 比例・K 不変。外挿倍率大で warning） |
+| `penetrationAtHorizon(M, K, t1, t2)` | 換算後の浸透率（短期観測→年間 等） |
+| `fitNbdMLE(counts, opts?)` | 度数分布からの最尤推定（M・K・logLik・converged） |
 
 ## パッケージ：`@forecast-manifesto/clv`
 

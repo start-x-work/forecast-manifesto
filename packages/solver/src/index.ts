@@ -29,3 +29,7 @@ export type {
 } from "./interval.js";
 export { conceptShare } from "./bp10.js";
 export { unitShare, forecastRevenue } from "./unitShare.js";
+export { scaleToHorizon, penetrationAtHorizon } from "./horizon.js";
+export type { ScaleToHorizonResult } from "./horizon.js";
+export { fitNbdMLE } from "./fit.js";
+export type { FitNbdMLEOptions, FitNbdMLEResult } from "./fit.js";
