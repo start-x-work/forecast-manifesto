@@ -47,6 +47,7 @@ import {
   conditionalExpectationByFrequency,
   trackingCumulative,
   mape,
+  chiSquareGof,
 } from "@forecast-manifesto/validate";
 import { parseTransactionsCsv } from "./csv.js";
 import {
@@ -73,6 +74,29 @@ function fmtPct(v: number): string {
   return (v * 100).toFixed(1) + "%";
 }
 
+function nbdGofFromRfm(rfm: Array<{ frequency: number }>):
+  ReturnType<typeof chiSquareGof> | undefined {
+  // 顧客の購入回数（frequency = 反復購買回数）から度数分布を組む
+  const counts: number[] = [];
+  for (const c of rfm) {
+    const r = c.frequency;
+    if (!Number.isInteger(r) || r < 0) continue;
+    counts[r] = (counts[r] ?? 0) + 1;
+  }
+  for (let i = 0; i < counts.length; i++) counts[i] = counts[i] ?? 0;
+  const N = counts.reduce((a, b) => a + b, 0);
+  if (N === 0 || counts.length < 2) return undefined;
+  const M = counts.reduce((a, c, r) => a + r * c, 0) / N;
+  const penetration = 1 - (counts[0] ?? 0) / N;
+  if (M <= 0 || penetration <= 0 || penetration >= 1) return undefined;
+  try {
+    const { K } = identifyK(M, penetration);
+    return chiSquareGof(counts, M, K);
+  } catch {
+    return undefined; // 同定不能な入力では GoF を出さない（黙って落とさず、警告なしで続行）
+  }
+}
+
 function analyze(argv: string[]): string {
   const args = parseArgs(argv);
   const csvPath = args.positional[0];
@@ -94,6 +118,9 @@ function analyze(argv: string[]): string {
   const bg = fitBgNbd(rfm);
   const gg = fitGammaGamma(rfm, { warn: false });
   const s = summarize(rfm, bg, gg);
+
+  // 適合度検定（NBD が当てはまるか）——「回す前の誠実」
+  const gof = nbdGofFromRfm(rfm);
   const clvOpts = { horizonMonths: horizon, monthlyDiscount: discount, margin };
 
   const ranked = rfm
@@ -125,6 +152,7 @@ function analyze(argv: string[]): string {
         params: { bgnbd: { r: bg.r, alpha: bg.alpha, a: bg.a, b: bg.b }, gammaGamma: gg },
         summary: s,
         summaryInterval: interval?.ci,
+        goodnessOfFit: gof,
         topCustomers: topWithCi ?? ranked,
       },
       null,
@@ -139,6 +167,10 @@ function analyze(argv: string[]): string {
   L.push(`- BG/NBD: r=${bg.r.toFixed(3)}, α=${bg.alpha.toFixed(3)}, a=${bg.a.toFixed(3)}, b=${bg.b.toFixed(3)}`);
   L.push(`- Gamma-Gamma: p=${gg.p.toFixed(3)}, q=${gg.q.toFixed(3)}, γ=${gg.gamma.toFixed(3)}（頻度×金額 相関 ${gg.independence.correlation.toFixed(3)}）`);
   L.push("");
+  if (gof && !gof.fits) {
+    L.push(`> ⚠️ 適合度警告：購入回数分布が NBD と有意に乖離（p=${gof.pValue.toFixed(3)}）。${gof.note}`);
+    L.push("");
+  }
   L.push(`## サマリ`);
   L.push("");
   const ci = interval?.ci;
