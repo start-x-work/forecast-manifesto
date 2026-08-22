@@ -44,3 +44,7 @@ Q1. ユーザー単位でランダム分割できるか？
 ---
 
 参照：[GeoLift](https://github.com/facebookincubator/GeoLift)（Meta, 合成対照群）／[Meridian](https://github.com/google/meridian)（Google, MMM）。本ページはツールの再実装をしない（非スコープ）。
+
+---
+
+出典：増分検証（インクリメンタリティ）の概念・iROAS の読み方は、公知の因果推論／マーケティング効果測定の枠組みに基づく。本章の設計ガイド・決定木は Start-X による編集であり、参照ツール（GeoLift・Meridian）は再実装しない。

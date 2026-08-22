@@ -64,3 +64,7 @@ M=1.4・浸透率（K=0.75 相当）・n=2,000 で、シードを変えて区間
 ## 注記：MAPE のゼロ除外
 
 検証モジュール（validate）の `mape` は `actual = 0` のペアを**除外して**計算する（ゼロ割回避）。ゼロが多いデータでは MAE / RMSE を併記すること。
+
+---
+
+出典：ブートストラップ法は Efron, B. (1979) "Bootstrap Methods: Another Look at the Jackknife", Annals of Statistics 7(1) に基づく公知の手法。シード固定・売上/CLV への区間伝播などの実装は Start-X による。
