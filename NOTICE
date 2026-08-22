@@ -9,6 +9,13 @@ Only publicly known formulas and model structures are implemented; no book text 
 公知の数式・モデル構造（NBD 等）に基づく実装です。
 公知の数式・モデル構造のみを実装しており、書籍本文の転載はしていません。
 
+The probabilistic models implemented here are published academic models; primary
+references are cited in the corresponding documents under docs/. The composition,
+method-selection logic, numerical solvers, and interval estimation are Start-X's own
+implementation.
+本実装が用いる確率モデルは公刊された学術モデルであり、一次文献は docs/ 各章に明記しています。
+合成・選定ロジック・数値解法・区間推定は Start-X による独自実装です。
+
 For more information, visit https://marketing-os.jp
 詳細は https://marketing-os.jp を参照してください。
 
