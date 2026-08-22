@@ -161,6 +161,7 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 | `conditionalExpectationByFrequency(calib, holdout, params, opts?)` | 頻度別 実測 vs 予測 |
 | `trackingCumulative(calib, transactions, params, opts)` | 累積トラッキング（FHL 2005 Figure 3 方式） |
 | `mae(pairs)` / `rmse(pairs)` / `mape(pairs)` | 誤差指標（`mape` は actual=0 を除外） |
+| `backtest(transactions, opts)` | 時間分割バックテスト（MAE/RMSE/MAPE＋区間カバレッジ率） |
 
 不確実性 API：`identifyKWithInterval`（solver）／`fitBgNbdWithInterval`・`clvWithInterval`・`summarizeWithInterval`（clv）→ [docs/08](./docs/08-uncertainty.md)
 
@@ -226,6 +227,7 @@ npm run example:validate  # 検証レポート（CDNOW 較正/検証）の実例
 npm run example:interval  # 「幅で語る」不確実性の実例
 npm run example:dirichlet # 多ブランド市場構造（DJ表・SCR）の実例
 npm run example:sbg       # 契約型（サブスク）解約構造の実例
+  npm run example:backtest  # 時間分割バックテスト（点精度＋区間カバレッジ）
 ```
 
 ---
