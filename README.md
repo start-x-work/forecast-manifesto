@@ -25,6 +25,25 @@ market（solver）で「市場に何回買う人がどれだけいるか」を�
 
 ---
 
+## 帰属と独自性
+
+**モデルは引用し、合成と実装は当方の設計です。**
+
+本リポジトリが実装するのは、いずれも著者名のある公刊された確率モデル（NBD・Dirichlet・BG/NBD・Gamma-Gamma・sBG）です。各モデルの一次文献は対応する docs に明記しています（[03](./docs/03-nbd-model.md)・[05b](./docs/05b-clv.md)・[07](./docs/07-dirichlet.md)・[09](./docs/09-sbg.md)）。
+
+Start-X の寄与は「モデルの発明」ではなく、**合成・選定・実装**にあります：
+
+1. **スタック合成** — 市場 NBD → Dirichlet → 顧客 NBD を同一の分布血統で貫く構成
+2. **メソッド選定決定木** — 数理 vs AI 時系列＋データ品質ゲート（[02](./docs/02-method-selection.md)）
+3. **予測パイプライン** — BP-10 → コンセプトシェア → ユニットシェア（認知率×配荷率×シェア×価格調整）→ 売上
+4. **K 同定の数値解法** — Newton＋二分法ハイブリッド・上限到達時の明示エラー
+5. **再現可能な区間推定** — mulberry32 シード固定・外部依存ゼロのパラメトリック・ブートストラップ（[08](./docs/08-uncertainty.md)）
+6. **3 層の公開/非公開境界** — 公開＝計算方法、非公開＝ベンチマーク K 値・実係数（[05](./docs/05-boundaries.md)）
+
+公刊された確率モデルを当方が発案したかのように記載することはしません。検証可能性（一次文献の明記と公開データでの再現）こそが差別化だと考えるためです。
+
+---
+
 ## 3 層構造：どこまでが無料で、どこからが支援か
 
 ```
@@ -91,6 +110,18 @@ const { K, ci } = identifyKWithInterval(1.4, 0.5461, { nCustomers: 2000 });
 console.log(K, ci); // 0.75, [0.68, 0.83] — 母数 2,000 人ならこの幅がある
 ```
 
+売上まで幅で語る（K の不確実性を浸透率ベース売上へ伝播）：
+
+```ts
+import { forecastRevenueWithInterval } from "@forecast-manifesto/solver";
+
+const r = forecastRevenueWithInterval(
+  { marketSize: 1_000_000, M: 1.4, penetration: 0.5461, unitPrice: 480 },
+  { nCustomers: 2000, seed: 1 },
+);
+console.log(r.point, r.low, r.high); // 点推定と 90%区間（母数が小さいほど広い）
+```
+
 パラメトリック・ブートストラップ（シード固定・再現可能）。`fitBgNbdWithInterval` / `clvWithInterval` / `summarizeWithInterval` も同様。→ [docs/08-uncertainty.md](./docs/08-uncertainty.md)
 
 ### 検証する — 予測を当てるゲームにしない
@@ -135,6 +166,11 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | `conceptShare(votes, targetIndex?)` | BP-10 コンセプトシェア集計 |
 | `unitShare(awareness, distribution, conceptShare, priceAdj)` | ユニットシェア |
 | `forecastRevenue(marketSize, unitShare, unitPrice)` | 売上予測 |
+| `scaleToHorizon(M, K, t1, t2)` | 期間換算（M 比例・K 不変。外挿倍率大で warning） |
+| `penetrationAtHorizon(M, K, t1, t2)` | 換算後の浸透率（短期観測→年間 等） |
+| `fitNbdMLE(counts, opts?)` | 度数分布からの最尤推定（M・K・logLik・converged） |
+| `fitIntentCalibration(pairs)` | 表明選好の補正係数（意向-行動ギャップ） |
+| `forecastRevenueWithInterval(input, opts?)` | 浸透率ベース売上＋区間（K の不確実性を伝播） |
 
 ## パッケージ：`@forecast-manifesto/clv`
 
@@ -161,6 +197,7 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 | `conditionalExpectationByFrequency(calib, holdout, params, opts?)` | 頻度別 実測 vs 予測 |
 | `trackingCumulative(calib, transactions, params, opts)` | 累積トラッキング（FHL 2005 Figure 3 方式） |
 | `mae(pairs)` / `rmse(pairs)` / `mape(pairs)` | 誤差指標（`mape` は actual=0 を除外） |
+| `backtest(transactions, opts)` | 時間分割バックテスト（MAE/RMSE/MAPE＋区間カバレッジ率） |
 
 不確実性 API：`identifyKWithInterval`（solver）／`fitBgNbdWithInterval`・`clvWithInterval`・`summarizeWithInterval`（clv）→ [docs/08](./docs/08-uncertainty.md)
 
@@ -226,6 +263,7 @@ npm run example:validate  # 検証レポート（CDNOW 較正/検証）の実例
 npm run example:interval  # 「幅で語る」不確実性の実例
 npm run example:dirichlet # 多ブランド市場構造（DJ表・SCR）の実例
 npm run example:sbg       # 契約型（サブスク）解約構造の実例
+  npm run example:backtest  # 時間分割バックテスト（点精度＋区間カバレッジ）
 ```
 
 ---

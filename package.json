@@ -24,7 +24,8 @@
     "example:interval": "tsx examples/interval.ts",
     "test:coverage": "npm run test:coverage --workspaces --if-present",
     "example:dirichlet": "tsx examples/dirichlet-market.ts",
-    "example:sbg": "tsx examples/sbg-retention.ts"
+    "example:sbg": "tsx examples/sbg-retention.ts",
+    "example:backtest": "tsx examples/backtest.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

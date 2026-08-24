@@ -29,3 +29,15 @@ export type {
 } from "./interval.js";
 export { conceptShare } from "./bp10.js";
 export { unitShare, forecastRevenue } from "./unitShare.js";
+export { scaleToHorizon, penetrationAtHorizon } from "./horizon.js";
+export type { ScaleToHorizonResult } from "./horizon.js";
+export { fitNbdMLE } from "./fit.js";
+export type { FitNbdMLEOptions, FitNbdMLEResult } from "./fit.js";
+export { fitIntentCalibration } from "./unitShare.js";
+export type { IntentCalibrationResult } from "./unitShare.js";
+export { forecastRevenueWithInterval } from "./revenue.js";
+export type {
+  RevenueWithIntervalInput,
+  RevenueWithIntervalOptions,
+  RevenueInterval,
+} from "./revenue.js";
