@@ -70,3 +70,7 @@ const { K, iterations } = identifyK(M, penetration);
 ## 四半期ごとの再同定
 
 K は一度求めて終わりではない。四半期ごとに再同定し、変化を市場構造のシグナルとして読む。→ [02-method-selection.md](./02-method-selection.md) の「ハイブリッド運用ルール」を参照。
+
+---
+
+出典：Ehrenberg, A.S.C. (1959) "The Pattern of Consumer Purchases", Applied Statistics 8(1); 同 (1988) "Repeat-Buying: Facts, Theory and Applications"。負の二項分布の購買行動への適用に関する公知のモデル構造・数式のみを実装し、原著本文の転載はしない。
