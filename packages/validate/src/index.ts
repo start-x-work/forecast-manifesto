@@ -17,3 +17,5 @@ export type { PredictionPair } from "./metrics.js";
 
 export { chiSquareGof } from "./gof.js";
 export type { ChiSquareGofResult } from "./gof.js";
+export { backtest } from "./backtest.js";
+export type { BacktestOptions, BacktestResult } from "./backtest.js";
