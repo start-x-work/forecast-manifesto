@@ -29,6 +29,7 @@ function assertNonNegative(name: string, value: number): void {
  * @param distribution 配荷率（0〜1）
  * @param conceptShare コンセプトシェア（0〜1）
  * @param priceAdj 価格調整係数（>= 0, 基準 1.0）
+ * @param intentCalibration 表明選好の補正係数（>= 0・既定 1.0 ＝無補正。fitIntentCalibration で推定）
  * @returns ユニットシェア
  * @throws {RangeError} 率が [0,1] 外、または priceAdj が負の場合
  */
@@ -37,12 +38,66 @@ export function unitShare(
   distribution: number,
   conceptShare: number,
   priceAdj: number,
+  intentCalibration: number = 1.0,
 ): number {
   assertUnitInterval("awareness", awareness);
   assertUnitInterval("distribution", distribution);
   assertUnitInterval("conceptShare", conceptShare);
   assertNonNegative("priceAdj", priceAdj);
-  return awareness * distribution * conceptShare * priceAdj;
+  assertNonNegative("intentCalibration", intentCalibration);
+  return awareness * distribution * conceptShare * priceAdj * intentCalibration;
+}
+
+export interface IntentCalibrationResult {
+  /** 補正係数：actualShare ≈ coefficient × conceptShare（原点回帰の最小二乗解） */
+  coefficient: number;
+  /** 当てはめに使ったペア数 */
+  n: number;
+  /** 意向-行動ギャップに関する補足 */
+  note: string;
+}
+
+/**
+ * ローンチ後の実シェアと事前コンセプトシェアから補正係数を推定する（意向-行動ギャップの補正）。
+ *
+ * 表明選好（購入意向の10点配分など）は実購買を系統的に過大評価しがちで、
+ * この乖離の補正が新商品予測誤差を最も左右する。coefficient は原点を通る
+ * 単回帰（最小二乗）で、unitShare の intentCalibration にそのまま渡せる。
+ *
+ * 注意：業界別の補正係数ベンチマークは非公開資産（docs/05-boundaries.md）。
+ * 本 OSS には数値を同梱せず、当てはめの「方法」だけを公開する。
+ *
+ * @param pairs { conceptShare, actualShare } のペア（実績ペア）
+ * @returns { coefficient, n, note }
+ * @throws {RangeError} pairs が空、または conceptShare が全て 0 の場合
+ */
+export function fitIntentCalibration(
+  pairs: { conceptShare: number; actualShare: number }[],
+): IntentCalibrationResult {
+  if (!Array.isArray(pairs) || pairs.length === 0) {
+    throw new RangeError("pairs must be a non-empty array of { conceptShare, actualShare }");
+  }
+  let sxx = 0;
+  let sxy = 0;
+  for (const { conceptShare, actualShare } of pairs) {
+    if (!Number.isFinite(conceptShare) || conceptShare < 0) {
+      throw new RangeError(`conceptShare must be a non-negative finite number, received ${conceptShare}`);
+    }
+    if (!Number.isFinite(actualShare) || actualShare < 0) {
+      throw new RangeError(`actualShare must be a non-negative finite number, received ${actualShare}`);
+    }
+    sxx += conceptShare * conceptShare;
+    sxy += conceptShare * actualShare;
+  }
+  if (sxx === 0) {
+    throw new RangeError("all conceptShare values are 0; cannot fit a calibration coefficient");
+  }
+  const coefficient = sxy / sxx; // 原点を通る最小二乗
+  const note =
+    coefficient < 1
+      ? `係数 < 1：表明選好が実シェアを過大評価している（意向-行動ギャップ）。unitShare の intentCalibration に ${coefficient.toFixed(3)} を渡して補正する。`
+      : `係数 ≥ 1：この標本では実シェアが事前コンセプトシェアを下回っていない。標本数・代表性を確認のこと（n=${pairs.length}）。`;
+  return { coefficient, n: pairs.length, note };
 }
 
 /**
