@@ -62,6 +62,16 @@ export function clv(c: Rfm, p: BgNbdParams, gg: GgParams, opts: ClvOptions): num
   return total;
 }
 
+/**
+ * コホート全体の CLV 合計。個客 CLV の線形和（割引後）であり、
+ * ポートフォリオ価値の再現可能性チェックに使う。
+ */
+export function portfolioClv(rfm: Rfm[], p: BgNbdParams, gg: GgParams, opts: ClvOptions): number {
+  let s = 0;
+  for (const c of rfm) s += clv(c, p, gg, opts);
+  return s;
+}
+
 export type SegmentLabel = "優良継続" | "離反危機" | "新規" | "休眠";
 
 export interface Segment {

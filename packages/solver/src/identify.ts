@@ -31,6 +31,8 @@ export interface IdentifyKResult {
   K: number;
   /** 収束までの反復回数 */
   iterations: number;
+  /** |P_0(K) − (1 − penetration)|。再現可能性の監査用 */
+  residual: number;
 }
 
 /**
@@ -85,8 +87,8 @@ export function identifyK(
   const fLower = f(lower);
   const fUpper = f(upper);
 
-  if (Math.abs(fLower) < tolerance) return { K: lower, iterations: 0 };
-  if (Math.abs(fUpper) < tolerance) return { K: upper, iterations: 0 };
+  if (Math.abs(fLower) < tolerance) return { K: lower, iterations: 0, residual: Math.abs(fLower) };
+  if (Math.abs(fUpper) < tolerance) return { K: upper, iterations: 0, residual: Math.abs(fUpper) };
 
   if (fLower <= 0) {
     // 浸透率が探索下限で表現できるより小さい（K が下限未満）
@@ -133,7 +135,7 @@ export function identifyK(
     dfRoot = df(root);
 
     if (Math.abs(fRoot) < tolerance) {
-      return { K: root, iterations: i };
+      return { K: root, iterations: i, residual: Math.abs(fRoot) };
     }
 
     // ブラケットを更新（f 単調減少: f>0 側を xPos, f<0 側を xNeg に寄せる）
@@ -144,5 +146,5 @@ export function identifyK(
     }
   }
 
-  return { K: root, iterations: maxIterations };
+  return { K: root, iterations: maxIterations, residual: Math.abs(fRoot) };
 }

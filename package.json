@@ -14,7 +14,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @forecast-manifesto/solver && npm run build -w @forecast-manifesto/clv && npm run build -w @forecast-manifesto/validate && npm run build -w @forecast-manifesto/dirichlet && npm run build -w @forecast-manifesto/sbg && npm run build -w @forecast-manifesto/cli",
+    "build": "npm run build -w @forecast-manifesto/solver && npm run build -w @forecast-manifesto/clv && npm run build -w @forecast-manifesto/validate && npm run build -w @forecast-manifesto/dirichlet && npm run build -w @forecast-manifesto/sbg && npm run build -w @forecast-manifesto/memory && npm run build -w @forecast-manifesto/price && npm run build -w @forecast-manifesto/cli",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "example:k": "tsx examples/k-identification.ts",

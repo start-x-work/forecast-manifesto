@@ -157,3 +157,59 @@ export function doubleJeopardyTable(model: DirichletModel): DoubleJeopardyRow[] 
     .map((m) => ({ name: m.name, share: m.share, penetration: m.penetration, buyRate: m.buyRate }))
     .sort((a, b) => a.share - b.share);
 }
+
+export interface DuplicationFitRow {
+  from: string;
+  to: string;
+  theoretical: number;
+  observed: number;
+  diff: number;
+}
+
+export interface DuplicationFitCheck {
+  rows: DuplicationFitRow[];
+  mae: number;
+  worst: DuplicationFitRow;
+}
+
+/**
+ * 観測重複率と理論重複率の乖離。
+ * observed[j][k] は「k の購買者が j も買う割合」（対角は無視）。
+ */
+export function duplicationFitCheck(
+  model: DirichletModel,
+  observed: number[][],
+): DuplicationFitCheck {
+  const D = duplicationMatrix(model);
+  const n = model.brands.length;
+  if (observed.length !== n) {
+    throw new RangeError(`observed matrix must be ${n}×${n}`);
+  }
+  const rows: DuplicationFitRow[] = [];
+  for (let j = 0; j < n; j++) {
+    if (!Array.isArray(observed[j]) || observed[j].length !== n) {
+      throw new RangeError(`observed matrix must be ${n}×${n}`);
+    }
+    for (let k = 0; k < n; k++) {
+      if (j === k) continue;
+      const theoretical = D[j][k];
+      const obs = observed[j][k];
+      if (!Number.isFinite(obs) || obs < 0 || obs > 1) {
+        throw new RangeError(`observed[${j}][${k}] must be within [0, 1]`);
+      }
+      rows.push({
+        from: model.brands[k].name,
+        to: model.brands[j].name,
+        theoretical,
+        observed: obs,
+        diff: theoretical - obs,
+      });
+    }
+  }
+  if (rows.length === 0) {
+    throw new RangeError("duplicationFitCheck requires at least two brands");
+  }
+  const mae = rows.reduce((s, r) => s + Math.abs(r.diff), 0) / rows.length;
+  const worst = rows.reduce((w, r) => (Math.abs(r.diff) > Math.abs(w.diff) ? r : w), rows[0]);
+  return { rows, mae, worst };
+}
