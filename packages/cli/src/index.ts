@@ -48,7 +48,13 @@ import {
   trackingCumulative,
   mape,
   chiSquareGof,
+  iroas,
+  relativeLift,
+  incrementalOutcome,
+  iroasWithInterval,
 } from "@forecast-manifesto/validate";
+import { shareOfMindTable, mentalPhysicalGap } from "@forecast-manifesto/memory";
+import { vanWestendorp } from "@forecast-manifesto/price";
 import { parseTransactionsCsv } from "./csv.js";
 import {
   parseArgs,
@@ -67,6 +73,9 @@ Usage:
   forecast-manifesto sbg --retention 0.87,0.74,0.65 [--periods 12] [--discount 0.1] [--revenue 12000] [--format md|json]
   forecast-manifesto sbg --cohorts-file cohorts.csv   (1行 = 1コホートの期別残存人数)
   forecast-manifesto validate <transactions.csv> --split-date 1997-09-30 --observation-end 1998-06-30 [--format md|json]
+  forecast-manifesto iroas --treated-mean 12 --control-mean 10 --treated-n 50 --spend 100 [--treated-var 4 --control-var 4 --control-n 50]
+  forecast-manifesto memory --mentions A:50,B:30 [--physical A:0.4,B:0.3]
+  forecast-manifesto psm --json responses.json
 
 Input CSV: UTF-8, header required (customerId,date,amount).`;
 
@@ -378,6 +387,79 @@ function validateCmd(argv: string[]): string {
   return L.join("\n");
 }
 
+function parseNamedPairs(raw: string): { name: string; value: number }[] {
+  return raw.split(",").map((part) => {
+    const [name, v] = part.split(":");
+    const value = Number(v);
+    if (!name || !Number.isFinite(value)) {
+      throw new Error(`expected Name:number pairs, received "${raw}"`);
+    }
+    return { name: name.trim(), value };
+  });
+}
+
+function iroasCmd(argv: string[]): string {
+  const args = parseArgs(argv);
+  const treatedMean = requireNumber(args, "treated-mean");
+  const controlMean = requireNumber(args, "control-mean");
+  const treatedN = requireNumber(args, "treated-n");
+  const spend = requireNumber(args, "spend");
+  const treatedVar = optionalNumber(args, "treated-var");
+  const controlVar = optionalNumber(args, "control-var");
+  const controlN = optionalNumber(args, "control-n") ?? treatedN;
+  const lift = relativeLift(treatedMean, controlMean);
+  const inc = incrementalOutcome({ mean: treatedMean, n: treatedN }, { mean: controlMean, n: controlN });
+  const point = iroas(inc, spend);
+  const payload: Record<string, unknown> = { lift, incrementalOutcome: inc, iroas: point };
+  if (treatedVar !== undefined && controlVar !== undefined) {
+    const interval = iroasWithInterval(
+      { mean: treatedMean, n: treatedN, variance: treatedVar },
+      { mean: controlMean, n: controlN, variance: controlVar },
+      spend,
+    );
+    payload.ci = interval.ci;
+  }
+  if (optionalString(args, "format") === "json") return JSON.stringify(payload);
+  const L = [`# 増分性（iROAS）`, "", `- リフト: ${fmtPct(lift)}`, `- 増分: ${inc}`, `- iROAS: ${point.toFixed(3)}`];
+  if (payload.ci) L.push(`- 95%区間: [${(payload.ci as [number, number]).map((x) => x.toFixed(3)).join(", ")}]`);
+  return L.join("\n");
+}
+
+function memoryCmd(argv: string[]): string {
+  const args = parseArgs(argv);
+  const mentions = parseNamedPairs(requireString(args, "mentions"));
+  const table = shareOfMindTable(mentions.map((m) => ({ name: m.name, mentions: m.value })));
+  const physicalRaw = optionalString(args, "physical");
+  const payload: Record<string, unknown> = { shareOfMind: table };
+  if (physicalRaw) {
+    const physical = new Map(parseNamedPairs(physicalRaw).map((p) => [p.name, p.value]));
+    payload.gap = table.map((r) => ({
+      name: r.name,
+      gap: mentalPhysicalGap(r.share, physical.get(r.name) ?? 0),
+    }));
+  }
+  if (optionalString(args, "format") === "json") return JSON.stringify(payload);
+  const L = ["# 記憶／再生", "", "| ブランド | 心的シェア |", "|---|---:|"];
+  for (const r of table) L.push(`| ${r.name} | ${fmtPct(r.share)} |`);
+  return L.join("\n");
+}
+
+function psmCmd(argv: string[]): string {
+  const args = parseArgs(argv);
+  const jsonPath = requireString(args, "json");
+  const responses = JSON.parse(readFileSync(jsonPath, "utf8"));
+  const r = vanWestendorp(responses);
+  if (optionalString(args, "format") === "json") return JSON.stringify(r);
+  return [
+    "# 価格受容（Van Westendorp）",
+    "",
+    `- 有効票: ${r.nValid}（除外 ${r.nDropped}）`,
+    `- IPP: ${r.ipp}`,
+    `- OPP: ${r.opp}`,
+    `- 受容レンジ PMC–PME: ${r.pmc} – ${r.pme}`,
+  ].join("\n");
+}
+
 export function run(argv: string[]): { code: number; output: string } {
   const [cmd, ...rest] = argv;
   try {
@@ -392,6 +474,12 @@ export function run(argv: string[]): { code: number; output: string } {
         return { code: 0, output: sbgCmd(rest) };
       case "validate":
         return { code: 0, output: validateCmd(rest) };
+      case "iroas":
+        return { code: 0, output: iroasCmd(rest) };
+      case "memory":
+        return { code: 0, output: memoryCmd(rest) };
+      case "psm":
+        return { code: 0, output: psmCmd(rest) };
       case undefined:
       case "help":
       case "--help":

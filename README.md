@@ -153,6 +153,9 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | [07](./docs/07-dirichlet.md) | 多ブランド市場構造（ダブルジェパディ・購買重複の法則） |
 | [08](./docs/08-uncertainty.md) | 不確実性の定量化（点ではなく、幅で語る） |
 | [09](./docs/09-sbg.md) | 契約型の解約構造（リテンションは「上がって見える」） |
+| [10](./docs/10-memory.md) | 記憶／再生構造（心的シェア・CEP・再生率） |
+| [11](./docs/11-price.md) | 価格受容（Van Westendorp と公開可能な価格調整） |
+| [12](./docs/12-branding-os.md) | Branding-OS 対応表（出口の言い換え＝新規開発ゼロ） |
 
 ---
 
@@ -160,10 +163,10 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 
 | 関数 | 役割 |
 |------|------|
-| `nbdPmf(r, M, K)` | NBD 確率質量関数 `P_r` |
-| `identifyK(M, penetration, opts?)` | K 同定（安全化 Newton 法） |
+| `nbdPmf(r, M, K)` / `nbdMean` / `nbdVariance` / `nbdCdf` | NBD 確率質量・モーメント・CDF |
+| `identifyK(M, penetration, opts?)` | K 同定（安全化 Newton 法、residual 付き） |
 | `zeroPurchaseProbability(M, K)` / `penetrationFromK(M, K)` | 非購入率／浸透率 |
-| `conceptShare(votes, targetIndex?)` | BP-10 コンセプトシェア集計 |
+| `conceptShare(votes, targetIndex?)` / `conceptShareByBrand(votes)` | BP-10 コンセプトシェア集計 |
 | `unitShare(awareness, distribution, conceptShare, priceAdj)` | ユニットシェア |
 | `forecastRevenue(marketSize, unitShare, unitPrice)` | 売上予測 |
 | `scaleToHorizon(M, K, t1, t2)` | 期間換算（M 比例・K 不変。外挿倍率大で warning） |
@@ -180,7 +183,7 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | `fitBgNbd(rfm, opts?)` | BG/NBD 最尤推定（頻度・生存） |
 | `probAlive(c, p)` / `expectedTransactions(t, c, p)` | 生存確率／期待購買回数 |
 | `fitGammaGamma(rfm, opts?)` / `expectedAvgValue(c, gg)` | 金額モデル（独立性チェック付き） |
-| `clv(c, p, gg, opts)` | CLV（割引現在価値） |
+| `clv(c, p, gg, opts)` / `portfolioClv(rfm, p, gg, opts)` | CLV（割引現在価値）／コホート合計 |
 | `summarize(rfm, p, gg)` | 診断サマリ（生存率・集中度・セグメント） |
 | `fitTruncatedNbd(m, repeatRate, opts?)` | ゼロ切断 NBD：購入者の平均回数とリピート率から (M, K) を同定 |
 | `truncatedNbdDistribution(M, K, n)` / `expectedNextPeriodPurchases(r, M, K)` | P(r \| r≥1)／翌年期待購買回数（逓減込み） |
@@ -198,6 +201,7 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 | `trackingCumulative(calib, transactions, params, opts)` | 累積トラッキング（FHL 2005 Figure 3 方式） |
 | `mae(pairs)` / `rmse(pairs)` / `mape(pairs)` | 誤差指標（`mape` は actual=0 を除外） |
 | `backtest(transactions, opts)` | 時間分割バックテスト（MAE/RMSE/MAPE＋区間カバレッジ率） |
+| `relativeLift` / `incrementalOutcome` / `iroas` / `iroasWithInterval` | 増分性の算術（GeoLift の再実装ではない） |
 
 不確実性 API：`identifyKWithInterval`（solver）／`fitBgNbdWithInterval`・`clvWithInterval`・`summarizeWithInterval`（clv）→ [docs/08](./docs/08-uncertainty.md)
 
@@ -210,6 +214,7 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 | `duplicationMatrix(model)` | ブランド間購買重複（重複購買の法則） |
 | `doubleJeopardyTable(model)` | シェア昇順の浸透率×頻度表（DJ線） |
 | `penetrationFitCheck(model, observed)` | 当てはまり診断（理論 vs 観測浸透率の乖離・MAE） |
+| `duplicationFitCheck(model, observed)` | 観測重複率 vs 理論重複の MAE |
 
 R `NBDdirichlet` 同梱の歯磨き粉市場で公表値（M=1.456, K=0.78, S=1.55）を再現 → [docs/07](./docs/07-dirichlet.md)
 
@@ -228,6 +233,24 @@ Fader & Hardie (2007) の High End / Regular 両セグメントで公表値（α
 
 **非契約型との使い分け**：解約イベントが**観測できる**（サブスク・SaaS・会費）→ `sbg`。解約が観測できず「買わなくなるだけ」（EC・小売）→ `clv`（BG/NBD）。詳細な対比表は [docs/09](./docs/09-sbg.md)。
 
+## パッケージ：`@forecast-manifesto/memory`
+
+| 関数 | 役割 |
+|------|------|
+| `shareOfMind` / `shareOfMindTable` | 心的シェア |
+| `cepCoverage` | CEP 被覆率 |
+| `regenerationRate` | 再生率（再想起 / 初回想起） |
+| `mentalPhysicalGap` | 心的シェア − 実購買シェア |
+
+## パッケージ：`@forecast-manifesto/price`
+
+| 関数 | 役割 |
+|------|------|
+| `vanWestendorp(responses)` | IPP / OPP / PMC / PME |
+| `priceAdjustmentFromRelative(observed, reference, elasticity)` | 公開可能な価格調整乗数（実係数は非公開） |
+
+Branding-OS が想起・価格・顧客資産・市場構造を診断の言葉に言い換えている対応表：[docs/12](./docs/12-branding-os.md)。
+
 ## CLI：`@forecast-manifesto/cli`
 
 ```bash
@@ -237,6 +260,9 @@ npx @forecast-manifesto/cli identify-k --m 1.4 --penetration 0.5461 --n 2000
 npx @forecast-manifesto/cli dirichlet --config market.json
 npx @forecast-manifesto/cli sbg --retention 0.87,0.74,0.65 --revenue 12000
 npx @forecast-manifesto/cli validate transactions.csv --split-date 2026-03-31 --observation-end 2026-06-30
+npx @forecast-manifesto/cli iroas --treated-mean 12 --control-mean 10 --treated-n 50 --spend 100
+npx @forecast-manifesto/cli memory --mentions A:50,B:30 --physical A:0.4,B:0.3
+npx @forecast-manifesto/cli psm --json responses.json
 ```
 
 入力 CSV は `customerId,date,amount`（UTF-8・ヘッダ必須・クオート対応）。不正行は行番号付きエラー。出力は `--format md|json`（md はそのまま顧問レポートに貼れる体裁）。

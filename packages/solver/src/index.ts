@@ -9,7 +9,15 @@
  * 詳細は docs/05-boundaries.md を参照。
  */
 
-export { lnGamma, nbdPmf, zeroPurchaseProbability, penetrationFromK } from "./nbd.js";
+export {
+  lnGamma,
+  nbdPmf,
+  nbdMean,
+  nbdVariance,
+  nbdCdf,
+  zeroPurchaseProbability,
+  penetrationFromK,
+} from "./nbd.js";
 export { identifyK } from "./identify.js";
 export type { IdentifyKOptions, IdentifyKResult } from "./identify.js";
 export {
@@ -27,7 +35,7 @@ export type {
   IdentifyKWithIntervalResult,
   KInterval,
 } from "./interval.js";
-export { conceptShare } from "./bp10.js";
+export { conceptShare, conceptShareByBrand } from "./bp10.js";
 export { unitShare, forecastRevenue } from "./unitShare.js";
 export { scaleToHorizon, penetrationAtHorizon } from "./horizon.js";
 export type { ScaleToHorizonResult } from "./horizon.js";

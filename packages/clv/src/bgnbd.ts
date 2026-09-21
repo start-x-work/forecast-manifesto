@@ -28,6 +28,8 @@ export interface FitBgNbdResult extends BgNbdParams {
 export interface FitOptions {
   maxIterations?: number;
   tolerance?: number;
+  /** 対数空間の初期値 [ln r, ln α, ln a, ln b]。省略時は複数スタートから最良尤度を選ぶ */
+  initialLogParams?: number[];
 }
 
 /** 個票の対数尤度（重みなし）。 */
@@ -50,8 +52,8 @@ export function logLikelihood(p: BgNbdParams, rfm: Rfm[]): number {
 /**
  * BG/NBD を最尤推定する（Nelder-Mead）。
  *
- * 正値制約を満たすため対数空間で最適化する。文献標準の初期値 r=α=a=b=1、
- * 最大 500 反復。
+ * 正値制約を満たすため対数空間で最適化する。
+ * 既定では複数スタート（r=α=a=b=1 を含む）から最良尤度を選ぶ。最大 500 反復。
  *
  * @param rfm 顧客別 RFM
  * @returns 推定パラメータ r, α, a, b と対数尤度
@@ -75,18 +77,34 @@ export function fitBgNbd(rfm: Rfm[], opts: FitOptions = {}): FitBgNbdResult {
     return -ll / n;
   };
 
-  const res = nelderMead(negMeanLL, [0, 0, 0, 0], {
-    maxIterations: opts.maxIterations ?? 500,
-    tolerance: opts.tolerance ?? 1e-10,
-  });
+  const starts: number[][] = opts.initialLogParams
+    ? [opts.initialLogParams]
+    : [
+        [0, 0, 0, 0],
+        [-1.5, 1.2, -0.3, 0.8],
+      ];
 
-  const params: BgNbdParams = {
-    r: Math.exp(res.x[0]),
-    alpha: Math.exp(res.x[1]),
-    a: Math.exp(res.x[2]),
-    b: Math.exp(res.x[3]),
-  };
-  return { ...params, logLik: logLikelihood(params, rfm) };
+  let bestParams: BgNbdParams | null = null;
+  let bestLl = -Infinity;
+  for (const start of starts) {
+    const res = nelderMead(negMeanLL, start, {
+      maxIterations: opts.maxIterations ?? 500,
+      tolerance: opts.tolerance ?? 1e-10,
+    });
+    const params: BgNbdParams = {
+      r: Math.exp(res.x[0]),
+      alpha: Math.exp(res.x[1]),
+      a: Math.exp(res.x[2]),
+      b: Math.exp(res.x[3]),
+    };
+    const ll = logLikelihood(params, rfm);
+    if (ll > bestLl) {
+      bestLl = ll;
+      bestParams = params;
+    }
+  }
+
+  return { ...bestParams!, logLik: bestLl };
 }
 
 /**

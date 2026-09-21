@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   nbdPmf,
+  nbdMean,
+  nbdVariance,
+  nbdCdf,
   lnGamma,
   zeroPurchaseProbability,
   penetrationFromK,
@@ -78,5 +81,27 @@ describe("nbdPmf", () => {
     expect(() => nbdPmf(0, 0, 1)).toThrow(RangeError);
     expect(() => nbdPmf(0, 1, 0)).toThrow(RangeError);
     expect(() => nbdPmf(0, -1, 1)).toThrow(RangeError);
+  });
+});
+
+describe("nbd moments", () => {
+  it("sample mean of PMF recovers M, sample variance recovers M + M²/K", () => {
+    const cases = [
+      { M: 0.9, K: 0.5 },
+      { M: 2.5, K: 1.2 },
+      { M: 1.4, K: 0.75 },
+    ];
+    for (const { M, K } of cases) {
+      let mean = 0;
+      let second = 0;
+      for (let r = 0; r <= 400; r++) {
+        const p = nbdPmf(r, M, K);
+        mean += r * p;
+        second += r * r * p;
+      }
+      expect(mean).toBeCloseTo(nbdMean(M, K), 4);
+      expect(second - mean * mean).toBeCloseTo(nbdVariance(M, K), 3);
+      expect(nbdCdf(400, M, K)).toBeGreaterThan(0.9999);
+    }
   });
 });

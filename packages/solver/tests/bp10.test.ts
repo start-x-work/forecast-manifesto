@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { conceptShare } from "../src/bp10.js";
+import { conceptShare, conceptShareByBrand } from "../src/bp10.js";
 
 describe("conceptShare", () => {
   it("averages the target brand's per-respondent vote share", () => {
@@ -62,5 +62,17 @@ describe("conceptShare", () => {
 
   it("throws on negative votes", () => {
     expect(() => conceptShare([[1, -2]])).toThrow(RangeError);
+  });
+
+  it("conceptShareByBrand recovers each column and sums to 1 when no abstentions", () => {
+    const votes = [
+      [5, 3, 2],
+      [1, 6, 3],
+    ];
+    const shares = conceptShareByBrand(votes);
+    expect(shares[0]).toBeCloseTo(0.3, 12);
+    expect(shares[1]).toBeCloseTo(0.45, 12);
+    expect(shares[2]).toBeCloseTo(0.25, 12);
+    expect(shares.reduce((a, b) => a + b, 0)).toBeCloseTo(1, 12);
   });
 });

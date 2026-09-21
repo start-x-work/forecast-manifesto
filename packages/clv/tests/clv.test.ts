@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { clv, summarize } from "../src/clv.js";
+import { clv, portfolioClv, summarize } from "../src/clv.js";
 import { fitBgNbd } from "../src/bgnbd.js";
 import { fitGammaGamma } from "../src/gammaGamma.js";
 import type { Rfm } from "../src/rfm.js";
@@ -38,6 +38,13 @@ describe("clv", () => {
   it("ranks a likely-alive buyer above a likely-churned one", () => {
     const silent = rfm.find((c) => c.customerId === "0002")!;
     expect(clv(active, bg, gg, opts)).toBeGreaterThan(clv(silent, bg, gg, opts));
+  });
+
+  it("portfolioClv equals the sum of individual CLVs", () => {
+    const slice = rfm.slice(0, 25);
+    let s = 0;
+    for (const c of slice) s += clv(c, bg, gg, opts);
+    expect(portfolioClv(slice, bg, gg, opts)).toBeCloseTo(s, 8);
   });
 
   it("throws on invalid options", () => {

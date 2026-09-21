@@ -1,29 +1,25 @@
 {
-  "name": "@forecast-manifesto/cli",
-  "version": "0.3.0",
-  "description": "需要予測・顧客資産分析のCLI。取引ログCSVからsummarize＋CLV（区間付き）、K同定、Dirichlet市場構造をMarkdown/JSONで出力。",
+  "name": "@forecast-manifesto/price",
+  "version": "0.1.0",
+  "description": "価格受容：Van Westendorp PSM 交点と相対価格の公開可能な調整乗数。",
   "license": "Apache-2.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/start-x-work/forecast-manifesto.git",
-    "directory": "packages/cli"
+    "directory": "packages/price"
   },
   "homepage": "https://github.com/start-x-work/forecast-manifesto",
   "keywords": [
-    "cli",
-    "clv",
-    "bg-nbd",
-    "dirichlet",
-    "demand-forecast",
+    "price-sensitivity",
+    "van-westendorp",
+    "psm",
+    "marketing",
     "start-x"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "forecast-manifesto": "./dist/bin.cjs"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -42,15 +38,6 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
-  },
-  "dependencies": {
-    "@forecast-manifesto/clv": "^0.4.0",
-    "@forecast-manifesto/dirichlet": "^0.3.0",
-    "@forecast-manifesto/memory": "^0.1.0",
-    "@forecast-manifesto/price": "^0.1.0",
-    "@forecast-manifesto/solver": "^0.5.0",
-    "@forecast-manifesto/sbg": "^0.3.0",
-    "@forecast-manifesto/validate": "^0.2.0"
   },
   "devDependencies": {
     "tsup": "^8.5.1",
