@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { fitNbdMLE } from "../src/fit.js";
 import { identifyK } from "../src/identify.js";
-import { nbdPmf, penetrationFromK } from "../src/nbd.js";
+import { nbdPmf } from "../src/nbd.js";
 
 /** 既知 (M,K) から期待度数分布（人数 N・rMax まで）を生成する。 */
 function syntheticCounts(M: number, K: number, N: number, rMax: number): number[] {
