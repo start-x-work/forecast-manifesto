@@ -3,7 +3,7 @@
 本パッケージの主な変更を記録する。書式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/)、
 バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従う。
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-09-28
 
 ### Added
 
