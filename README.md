@@ -153,6 +153,7 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | [07](./docs/07-dirichlet.md) | 多ブランド市場構造（ダブルジェパディ・購買重複の法則） |
 | [08](./docs/08-uncertainty.md) | 不確実性の定量化（点ではなく、幅で語る） |
 | [09](./docs/09-sbg.md) | 契約型の解約構造（リテンションは「上がって見える」） |
+| [10](./docs/10-reach.md) | リーチ＆フリークエンシー（露出回数→到達率・接触頻度） |
 
 ---
 
@@ -171,6 +172,7 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | `fitNbdMLE(counts, opts?)` | 度数分布からの最尤推定（M・K・logLik・converged） |
 | `fitIntentCalibration(pairs)` | 表明選好の補正係数（意向-行動ギャップ） |
 | `forecastRevenueWithInterval(input, opts?)` | 浸透率ベース売上＋区間（K の不確実性を伝播） |
+| `reachFromImpressions(input)` | リーチ＆フリークエンシー（露出回数→到達率・接触頻度、K は実測 or 事前レンジ） |
 
 ## パッケージ：`@forecast-manifesto/clv`
 
@@ -186,6 +188,7 @@ CDNOW 公開データで較正39週→検証39週の外挿誤差 4.1%（最終�
 | `truncatedNbdDistribution(M, K, n)` / `expectedNextPeriodPurchases(r, M, K)` | P(r \| r≥1)／翌年期待購買回数（逓減込み） |
 | `topBuyersRevenueShare(M, K, topFraction?)` | 上位 20% 購入者の売上集中度 |
 | `fitTruncatedNbdWithInterval(m, repeatRate, opts?)` | ゼロ切断 NBD 同定＋(M, K)・翌年期待購買回数の p5–p95 区間（シード固定） |
+| `clvCohortWithInterval(input, opts?)` | コホート平均 CLV＋区間（区間つき LTV。母数が少ないほど幅が広い） |
 
 CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-2 で再現（`packages/clv/tests`）。
 
@@ -199,7 +202,7 @@ CDNOW 公開データで Fader-Hardie-Lee (2005) の公表値を許容誤差 1e-
 | `mae(pairs)` / `rmse(pairs)` / `mape(pairs)` | 誤差指標（`mape` は actual=0 を除外） |
 | `backtest(transactions, opts)` | 時間分割バックテスト（MAE/RMSE/MAPE＋区間カバレッジ率） |
 
-不確実性 API：`identifyKWithInterval`（solver）／`fitBgNbdWithInterval`・`clvWithInterval`・`summarizeWithInterval`（clv）→ [docs/08](./docs/08-uncertainty.md)
+不確実性 API：`identifyKWithInterval`・`forecastRevenueWithInterval`（solver）／`fitBgNbdWithInterval`・`clvWithInterval`・`clvCohortWithInterval`・`summarizeWithInterval`（clv）→ [docs/08](./docs/08-uncertainty.md)
 
 ## パッケージ：`@forecast-manifesto/dirichlet`
 

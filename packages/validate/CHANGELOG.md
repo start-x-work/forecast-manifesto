@@ -5,6 +5,13 @@
 
 すべて **追加のみ（additive）** で、既存 API のシグネチャに破壊的変更はない。
 
+## [0.3.0] - 2026-09-28
+
+### Added
+
+- **時間分割バックテスト** `backtest(transactions, opts)`（[`src/backtest.ts`](./src/backtest.ts)）。較正期間 t1 で BG/NBD を推定し、検証期間 t2 の顧客別購買回数を予測して実績と突き合わせる。点精度（MAE / RMSE / MAPE）と予測区間のカバレッジ率を返す。予測区間は検証期間購買回数を Poisson（期待値）で近似した保守的区間（過分散のためカバレッジは名目水準の下側に出やすい）。使用例は [`examples/backtest.ts`](../../examples/backtest.ts)。
+- 公開 API スナップショットテスト（[`tests/api.test.ts`](./tests/api.test.ts)）。エクスポートの意図しない削除・改名を CI で検知する。
+
 ## [0.2.0] - 2026-08-24
 
 ### Added
