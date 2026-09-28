@@ -41,3 +41,5 @@ export type {
   RevenueWithIntervalOptions,
   RevenueInterval,
 } from "./revenue.js";
+export { reachFromImpressions } from "./reach.js";
+export type { ReachInput, ReachResult } from "./reach.js";

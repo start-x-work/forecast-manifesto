@@ -62,6 +62,16 @@ export type {
   SummaryWithIntervalResult,
 } from "./bootstrap.js";
 
+// コホートの「1 顧客あたり平均 CLV」の区間（区間つき LTV, docs/05b-clv.md）。
+// 既存の bootstrap.clvWithInterval（個客のモンテカルロ区間）と役割が異なるため、
+// 後方互換のためコホート版は clvCohortWithInterval として公開する。
+export { clvWithInterval as clvCohortWithInterval } from "./clvInterval.js";
+export type {
+  ClvIntervalInput,
+  ClvIntervalOptions,
+  ClvIntervalResult,
+} from "./clvInterval.js";
+
 // 教材用 Pareto/NBD 参照実装（名前空間で分離）
 export * as paretoNbd from "./paretoNbd.js";
 export type { ParetoNbdParams } from "./paretoNbd.js";

@@ -56,6 +56,29 @@ const report = summarize(rfm, p, gg);                   // 診断サマリ
 - パラメータは CDNOW 公開データ（Fader-Hardie-Lee 2005）で検証済み：`fitBgNbd` は公表値 r≈0.243, α≈4.414, a≈0.793, b≈2.426 を、`fitGammaGamma` は p≈6.25, q≈3.74, γ≈15.44 を許容誤差 1e-2 で再現する（`packages/clv/tests`）。
 - Gamma-Gamma は**頻度と金額の独立**を仮定する。`fitGammaGamma` は相関をチェックし、強い場合に警告する。
 
+## 3.5. 区間つき LTV（コホート平均の幅）
+
+点で LTV を語ると、投資判断が幅を失う。`clvCohortWithInterval` はコホートの**1 顧客あたり平均 CLV** に、パラメトリック・ブートストラップで区間を付す。点推定は各顧客 `clv()` の平均に一致し（売上ベース、`margin` を掛ければ利益ベースの `grossProfitPerCustomer` も返す）、推定パラメータどおりに同数コホートを再生成して再推定を繰り返し、平均 CLV のばらつきを分位点区間にする。
+
+```ts
+import { clvCohortWithInterval, toRfm } from "@forecast-manifesto/clv";
+
+const rfm = toRfm(transactions, observationEnd);
+const r = clvCohortWithInterval(
+  { rfm, horizonMonths: 12, monthlyDiscount: 0.01, margin: 0.3 },
+  { iterations: 200, seed: 1 },
+);
+// r.perCustomerMean = { point, low, high }（売上ベース）
+// r.grossProfitPerCustomer = { point, low, high }（margin 適用時のみ）
+// r.warnings … 妥当性の注意（下記）
+```
+
+**幅は母数で決まる**：顧客数が少ないほど再推定のばらつきが大きく、区間は広がる。だから幅が広いうちは「点」で意思決定しない。同一入力＋同一 `seed` で結果は完全に再現する（依存ゼロ）。
+
+**回す前の誠実**：次のとき `warnings` で通知する——(1) 顧客数が 300 未満で区間が過小評価になりうる、(2) 予測期間が観測窓（最大 T）を超える外挿、(3) 頻度×金額の相関が強く Gamma-Gamma の独立仮定が崩れている。フルベイズ（事後分布）が要る場合は [PyMC-Marketing](https://github.com/pymc-labs/pymc-marketing) を参照（→ [08-uncertainty.md](./08-uncertainty.md)）。
+
+> 命名注記：個客単位のモンテカルロ区間は別関数 `clvWithInterval`（[`bootstrap.ts`](../packages/clv/src/bootstrap.ts)）で提供している。コホート平均版は後方互換のため `clvCohortWithInterval` として公開する。
+
 ## 4. 限界の明記（スコープ）
 
 このモデルは**非契約型・連続時間**が前提だ。顧客がいつ離反したかを直接は観測できず（「解約ボタン」がない）、購買間隔から確率的に推定する——EC・小売・アプリ内課金などが該当する。

@@ -5,7 +5,14 @@
 
 すべて **追加のみ（additive）** で、既存の点推定 API のシグネチャに破壊的変更はない。
 
-## [Unreleased]
+## [0.6.0] - 2026-09-28
+
+### Added
+
+- **リーチ＆フリークエンシー** `reachFromImpressions(input)`（[`src/reach.ts`](./src/reach.ts)）。露出回数と母集団から到達率（reach）・母集団平均頻度（averageFrequencyAll）・到達者内平均頻度（frequencyAmongReached）を NBD で求める。実測リーチがあれば `identifyK` で K を逆算して再現し、無ければ K の事前レンジ（`kPrior`）から reach の区間を出す。媒体別・出稿別の K 実値（ベンチマーク）は同梱しない（`docs/05-boundaries.md`）。解説は [docs/10-reach.md](../../docs/10-reach.md)。
+- **表明選好の補正** `fitIntentCalibration(pairs)` と `unitShare(..., intentCalibration=1.0)`（[`src/unitShare.ts`](./src/unitShare.ts)）。ローンチ後の実シェアと事前コンセプトシェアの原点回帰で意向-行動ギャップの補正係数を推定する。既定 1.0 で従来結果は不変（後方互換）。業界別の補正係数は同梱しない。解説は [docs/04-bp10.md](../../docs/04-bp10.md)。
+- **浸透率ベース売上の区間** `forecastRevenueWithInterval(input, opts?)`（[`src/revenue.ts`](./src/revenue.ts)）。K（浸透率）の不確実性を再生成ブートストラップで売上まで伝播させる。同一シードで完全再現。解説は [docs/08-uncertainty.md](../../docs/08-uncertainty.md)。
+- 公開 API スナップショットテスト（[`tests/api.test.ts`](./tests/api.test.ts)）。エクスポートの意図しない削除・改名を CI で検知する。
 
 ### Fixed
 
