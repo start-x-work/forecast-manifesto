@@ -5,6 +5,17 @@
 
 すべて **追加のみ（additive）** で、既存 API のシグネチャに破壊的変更はない。
 
+## [0.5.0] - Unreleased
+
+### Added
+
+- **コホート CLV 合計** `portfolioClv(rfm, p, gg, opts)`（[`src/clv.ts`](./src/clv.ts)）。個客 `clv` の線形和。
+- `fitBgNbd` の `FitOptions.initialLogParams`（対数空間の初期値）。**省略時の挙動は 0.4.0 と同一**（文献標準の r=α=a=b=1 から単一スタート）で、点推定・ブートストラップ区間の結果は変わらない。局所解を疑うときに呼び出し側が別の始点を試し、`logLik` を比べるために使う。
+
+### Changed
+
+- 依存 `@forecast-manifesto/solver` を `^0.7.0` に更新。
+
 ## [0.4.0] - 2026-09-28
 
 ### Added

@@ -8,6 +8,7 @@ import * as api from "../src/index.js";
  */
 const EXPECTED_EXPORTS = [
   "conceptShare",
+  "conceptShareByBrand",
   "createRng",
   "fitIntentCalibration",
   "fitNbdMLE",
@@ -16,7 +17,10 @@ const EXPECTED_EXPORTS = [
   "identifyK",
   "identifyKWithInterval",
   "lnGamma",
+  "nbdCdf",
+  "nbdMean",
   "nbdPmf",
+  "nbdVariance",
   "penetrationAtHorizon",
   "penetrationFromK",
   "percentile",

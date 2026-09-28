@@ -5,6 +5,16 @@
 
 すべて **追加のみ（additive）** で、既存 API のシグネチャに破壊的変更はない。
 
+## [0.4.0] - Unreleased
+
+### Added
+
+- **増分性の算術** `relativeLift` / `incrementalOutcome` / `iroas` / `meanDifferenceInterval` / `iroasWithInterval`（[`src/incrementality.ts`](./src/incrementality.ts)）。テスト群・対照群の平均と標本サイズ（区間には分散も）から、リフト・増分成果・iROAS と正規近似の区間を出す。合成対照群・MMM の再実装はしない。解説は [docs/06-incrementality.md](../../docs/06-incrementality.md)。区間の水準は 0.9 / 0.95 / 0.99 のみ。出稿削減テスト（spend < 0）でも区間は下限 ≤ 上限の順に返す。
+
+### Changed
+
+- 依存を `@forecast-manifesto/clv` `^0.5.0`・`@forecast-manifesto/solver` `^0.7.0` に更新。
+
 ## [0.3.0] - 2026-09-28
 
 ### Added

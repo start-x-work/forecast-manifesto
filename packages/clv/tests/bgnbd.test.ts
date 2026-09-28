@@ -92,6 +92,23 @@ describe("fitBgNbd — boundaries", () => {
     for (const c of zeros) expect(probAlive(c, fit)).toBe(1);
   });
 
+  it("initialLogParams is opt-in: the default start is unchanged and an explicit [0,0,0,0] matches it", () => {
+    const one: Rfm[] = [
+      { customerId: "a", frequency: 3, recency: 20, T: 30, monetary: 40 },
+      { customerId: "b", frequency: 0, recency: 0, T: 30, monetary: 0 },
+      { customerId: "c", frequency: 1, recency: 5, T: 30, monetary: 10 },
+    ];
+    const byDefault = fitBgNbd(one);
+    const explicit = fitBgNbd(one, { initialLogParams: [0, 0, 0, 0] });
+    expect(explicit).toEqual(byDefault);
+  });
+
+  it("rejects malformed initialLogParams", () => {
+    const one: Rfm[] = [{ customerId: "x", frequency: 3, recency: 20, T: 30, monetary: 40 }];
+    expect(() => fitBgNbd(one, { initialLogParams: [0, 0, 0] })).toThrow(RangeError);
+    expect(() => fitBgNbd(one, { initialLogParams: [0, 0, NaN, 0] })).toThrow(RangeError);
+  });
+
   it("handles a single customer", () => {
     const one: Rfm[] = [{ customerId: "x", frequency: 3, recency: 20, T: 30, monetary: 40 }];
     const fit = fitBgNbd(one);

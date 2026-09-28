@@ -41,7 +41,7 @@ export type {
   FitTruncatedNbdWithIntervalResult,
 } from "./truncatedNbdInterval.js";
 
-export { clv, summarize } from "./clv.js";
+export { clv, portfolioClv, summarize } from "./clv.js";
 export type {
   ClvOptions,
   Summary,

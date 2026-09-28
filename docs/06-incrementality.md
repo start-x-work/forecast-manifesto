@@ -39,12 +39,18 @@ Q1. ユーザー単位でランダム分割できるか？
 
 ## 位置づけ（C1 レンズとの関係）
 
-本ページは設計ガイドの起案であり、増分検証のコード実装・顧問メニュー化は **C1（増分検証）のトリガー達成後**に行う。それまで実案件では上記OSSをクライアント名義で運用し、当リポジトリは方法選定と読み方の規律を提供する。
+本ページは設計ガイドである。GeoLift / MMM の再実装はしない。一方、**増分の算術**（リフト、増分成果、iROAS、差の正規近似区間）は `@forecast-manifesto/validate` に置く。入力は「やらなかった世界」との差分として既に定義された観測値であり、合成対照群そのものは外部OSSに委ねる。
+
+```ts
+import { iroas, iroasWithInterval } from "@forecast-manifesto/validate";
+
+iroas(250_000, 100_000); // 2.5
+```
 
 ---
 
-参照：[GeoLift](https://github.com/facebookincubator/GeoLift)（Meta, 合成対照群）／[Meridian](https://github.com/google/meridian)（Google, MMM）。本ページはツールの再実装をしない（非スコープ）。
+参照：[GeoLift](https://github.com/facebookincubator/GeoLift)（Meta, 合成対照群）／[Meridian](https://github.com/google/meridian)（Google, MMM）。合成対照・MMM の再実装は非スコープ。
 
 ---
 
-出典：増分検証（インクリメンタリティ）の概念・iROAS の読み方は、公知の因果推論／マーケティング効果測定の枠組みに基づく。本章の設計ガイド・決定木は Start-X による編集であり、参照ツール（GeoLift・Meridian）は再実装しない。
+出典：増分検証（インクリメンタリティ）の概念・iROAS の読み方は、公知の因果推論／マーケティング効果測定の枠組みに基づく。iROAS（増分売上 ÷ 追加出稿費）の定義は Vaver, J. & Koehler, J. (2011) "Measuring Ad Effectiveness Using Geo Experiments"、等分散を仮定しない平均差の標準誤差は Welch, B.L. (1947) "The generalization of 'Student's' problem when several different population variances are involved", Biometrika 34(1-2), 28-35 に基づく（本実装は正規近似）。本章の設計ガイド・決定木は Start-X による編集であり、参照ツール（GeoLift・Meridian）は再実装しない。

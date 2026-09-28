@@ -1,0 +1,47 @@
+{
+  "name": "@forecast-manifesto/price",
+  "version": "0.1.0",
+  "description": "価格受容：Van Westendorp PSM 交点と相対価格の公開可能な調整乗数。",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/start-x-work/forecast-manifesto.git",
+    "directory": "packages/price"
+  },
+  "homepage": "https://github.com/start-x-work/forecast-manifesto",
+  "keywords": [
+    "price-sensitivity",
+    "van-westendorp",
+    "psm",
+    "marketing",
+    "start-x"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

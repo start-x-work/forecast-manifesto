@@ -127,6 +127,60 @@ describe("run sbg", () => {
   });
 });
 
+describe("run iroas", () => {
+  it("computes iROAS from group means", () => {
+    const r = run([
+      "iroas",
+      "--treated-mean",
+      "12",
+      "--control-mean",
+      "10",
+      "--treated-n",
+      "50",
+      "--spend",
+      "100",
+    ]);
+    expect(r.code).toBe(0);
+    expect(r.output).toMatch(/iROAS: 1\.000/);
+  });
+});
+
+describe("run memory", () => {
+  it("prints share of mind and the mental−physical gap", () => {
+    const r = run(["memory", "--mentions", "A:50,B:30", "--physical", "A:0.4,B:0.3", "--format", "json"]);
+    expect(r.code).toBe(0);
+    const j = JSON.parse(r.output);
+    expect(j.shareOfMind[0].share).toBeCloseTo(0.625, 12);
+    expect(j.gap[0].gap).toBeCloseTo(0.225, 12);
+    expect(run(["memory", "--mentions", "A:50,B:30", "--physical", "A:0.4,B:0.3"]).output).toMatch(/心的−実購買/);
+  });
+
+  it("fails instead of treating a missing physical share as 0", () => {
+    const r = run(["memory", "--mentions", "A:50,B:30", "--physical", "A:0.4"]);
+    expect(r.code).not.toBe(0);
+    expect(r.output).toMatch(/B/);
+  });
+});
+
+describe("run psm", () => {
+  it("reads responses from JSON and prints the four points", () => {
+    const dir = mkdtempSync(join(tmpdir(), "fm-psm-"));
+    const file = join(dir, "responses.json");
+    writeFileSync(
+      file,
+      JSON.stringify([
+        { tooCheap: 10, cheap: 20, expensive: 40, tooExpensive: 50 },
+        { tooCheap: 15, cheap: 25, expensive: 45, tooExpensive: 55 },
+        { tooCheap: 12, cheap: 22, expensive: 42, tooExpensive: 52 },
+      ]),
+    );
+    const r = run(["psm", "--json", file]);
+    expect(r.code).toBe(0);
+    expect(r.output).toMatch(/有効票: 3/);
+    expect(r.output).toMatch(/OPP: /);
+  });
+});
+
 describe("run validate — CDNOW 完走", () => {
   it("produces the calibration/holdout report", () => {
     const r = run(["validate", CDNOW_CSV, "--split-date", "1997-09-30", "--observation-end", "1998-06-30"]);
