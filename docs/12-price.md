@@ -45,4 +45,4 @@ const adj = priceAdjustmentFromRelative(observed, psm.opp, elasticity);
 
 ---
 
-出典：Van Westendorp, P.H. (1976) "NSS-Price Sensitivity Meter (PSM) – A new approach to study consumer perception of prices", Proceedings of the 29th ESOMAR Congress, Venice。4問の設問構造と交点の定義は同論文に基づき、交点の組み合わせ（上表）・格子上の交点探索・相対価格乗数の関数形の選択は Start-X による実装。公知の手法・数式のみを実装し、論文本文の転載はしない。
+出典：Van Westendorp, P.H. (1976) "NSS Price Sensitivity Meter (PSM) — A New Approach to study Consumer-Perception of Prices", Proceedings of the 29th ESOMAR Congress, Venice, 139-167。4問の設問構造と交点の定義は同論文に基づき、交点の組み合わせ（上表）・格子上の交点探索・相対価格乗数の関数形の選択は Start-X による実装。公知の手法・数式のみを実装し、論文本文の転載はしない。
