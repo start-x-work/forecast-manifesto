@@ -25,6 +25,7 @@ const EXPECTED_EXPORTS = [
   "logLikelihood",
   "nelderMead",
   "paretoNbd",
+  "portfolioClv",
   "probAlive",
   "summarize",
   "summarizeWithInterval",

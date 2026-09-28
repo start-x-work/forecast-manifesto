@@ -5,6 +5,14 @@
 
 すべて **追加のみ（additive）** で、既存の点推定 API のシグネチャに破壊的変更はない。
 
+## [0.7.0] - Unreleased
+
+### Added
+
+- **NBD のモーメントと累積分布** `nbdMean(M, K)` / `nbdVariance(M, K)` / `nbdCdf(n, M, K)`（[`src/nbd.ts`](./src/nbd.ts)）。PMF の総和・平均・分散の自己検証に使う。
+- **全ブランドのコンセプトシェア** `conceptShareByBrand(votes)`（[`src/bp10.ts`](./src/bp10.ts)）。既存の `conceptShare(votes, j)` を全列に適用する薄いラッパー。
+- `identifyK` の戻り値に `residual`（`|P_0(K) − (1 − penetration)|`）を追加。既存フィールド `K` / `iterations` の値と意味は不変。
+
 ## [0.6.0] - 2026-09-28
 
 ### Added

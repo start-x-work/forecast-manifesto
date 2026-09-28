@@ -91,3 +91,33 @@ export function nbdPmf(r: number, M: number, K: number): number {
   const lnTail = r === 0 ? 0 : r * Math.log(M / (M + K));
   return Math.exp(lnP0 + lnRatio + lnTail);
 }
+
+/**
+ * NBD の平均 E[r] = M。
+ * 実装の自己診断用（PMF 総和・モーメント検証の基準点）。
+ */
+export function nbdMean(M: number, K: number): number {
+  assertParams(M, K);
+  return M;
+}
+
+/**
+ * NBD の分散 Var[r] = M + M²/K。
+ * K が小さいほど分散が平均を大きく上回り、ヘビーユーザー偏在になる。
+ */
+export function nbdVariance(M: number, K: number): number {
+  assertParams(M, K);
+  return M + (M * M) / K;
+}
+
+/**
+ * 累積分布 P(r ≤ n)。n までの PMF を足す（打ち切りではない）。
+ */
+export function nbdCdf(n: number, M: number, K: number): number {
+  if (!Number.isInteger(n) || n < 0) {
+    throw new RangeError(`n must be a non-negative integer, received ${n}`);
+  }
+  let s = 0;
+  for (let r = 0; r <= n; r++) s += nbdPmf(r, M, K);
+  return s;
+}

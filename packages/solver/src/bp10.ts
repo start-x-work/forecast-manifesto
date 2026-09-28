@@ -59,3 +59,19 @@ export function conceptShare(votes: number[][], targetIndex = 0): number {
 
   return shareSum / votes.length;
 }
+
+/**
+ * 全ブランドのコンセプトシェア。行正規化の平均なので合計は 1
+ * （全ゼロ回答者は全員 0 になり、その分だけ合計が 1 を下回る）。
+ */
+export function conceptShareByBrand(votes: number[][]): number[] {
+  if (!Array.isArray(votes) || votes.length === 0) {
+    throw new RangeError("votes must be a non-empty matrix");
+  }
+  const brandCount = votes[0].length;
+  const shares: number[] = [];
+  for (let j = 0; j < brandCount; j++) {
+    shares.push(conceptShare(votes, j));
+  }
+  return shares;
+}

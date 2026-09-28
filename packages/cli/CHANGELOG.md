@@ -3,6 +3,18 @@
 本パッケージの主な変更を記録する。書式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/)、
 バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従う。
 
+## [0.3.0] - Unreleased
+
+### Added
+
+- `iroas` コマンド：群平均・標本サイズ・追加出稿費から iROAS（分散を渡せば 95% 区間）を出す。
+- `memory` コマンド：言及回数から心的シェア、`--physical` を渡せば心的−実購買ギャップを出す。`--physical` に無いブランドがあればエラーにする（0 とみなして黙って計算しない）。
+- `psm` コマンド：回答 JSON から Van Westendorp の4交点を出す。
+
+### Changed
+
+- 依存を clv `^0.5.0`・dirichlet `^0.3.0`・solver `^0.7.0`・validate `^0.4.0` に更新し、memory `^0.1.0`・price `^0.1.0` を追加。
+
 ## [0.2.1] - 2026-08-24
 
 ### Added

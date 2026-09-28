@@ -5,6 +5,7 @@ import {
   duplicationMatrix,
   doubleJeopardyTable,
   penetrationFitCheck,
+  duplicationFitCheck,
   pRGivenN,
   pZeroGivenN,
   brandPenetration,
@@ -124,5 +125,18 @@ describe("penetrationFitCheck — 当てはまり診断", () => {
   it("throws on empty observations or unknown brands", () => {
     expect(() => penetrationFitCheck(model, [])).toThrow(RangeError);
     expect(() => penetrationFitCheck(model, [{ name: "Nope", observedPenetration: 0.1 }])).toThrow(RangeError);
+  });
+});
+
+describe("duplicationFitCheck", () => {
+  it("MAE is 0 when observed equals the theoretical matrix", () => {
+    const D = duplicationMatrix(model);
+    const { mae, rows } = duplicationFitCheck(model, D);
+    expect(mae).toBeCloseTo(0, 12);
+    expect(rows.length).toBe(8 * 7);
+  });
+
+  it("throws on a wrong-sized matrix", () => {
+    expect(() => duplicationFitCheck(model, [[1]])).toThrow(RangeError);
   });
 });

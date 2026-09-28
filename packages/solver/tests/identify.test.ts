@@ -15,11 +15,12 @@ describe("identifyK — research example (NBD demand model)", () => {
     const referenceK = 0.75; // Excel ソルバー結果の代替値
     const penetration = penetrationFromK(M, referenceK);
 
-    const { K, iterations } = identifyK(M, penetration);
+    const { K, iterations, residual } = identifyK(M, penetration);
 
     expect(K).toBeCloseTo(referenceK, 3);
     expect(iterations).toBeGreaterThan(0);
     expect(iterations).toBeLessThanOrEqual(200);
+    expect(residual).toBeLessThan(1e-10);
   });
 
   it("the identified K reproduces the observed penetration to high precision", () => {
