@@ -22,7 +22,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "forecast-manifesto": "./dist/bin.cjs"
+    "forecast-manifesto": "dist/bin.cjs"
   },
   "exports": {
     ".": {

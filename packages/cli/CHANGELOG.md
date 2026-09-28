@@ -3,7 +3,7 @@
 本パッケージの主な変更を記録する。書式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/)、
 バージョニングは [Semantic Versioning](https://semver.org/lang/ja/) に従う。
 
-## [0.3.0] - Unreleased
+## [0.3.0] - 2026-09-28
 
 ### Added
 
@@ -13,6 +13,7 @@
 
 ### Changed
 
+- `bin` のパスを `npm pkg fix` の正規形（`dist/bin.cjs`）に揃えた。公開時に npm が同じ整形を自動適用していたため、公開済み 0.3.0 の中身とリポジトリの記述を一致させる変更で、動作は変わらない。
 - 依存を clv `^0.5.0`・dirichlet `^0.3.0`・solver `^0.7.0`・validate `^0.4.0` に更新し、memory `^0.1.0`・price `^0.1.0` を追加。
 
 ## [0.2.1] - 2026-08-24
